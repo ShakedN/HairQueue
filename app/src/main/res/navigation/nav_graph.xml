@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph.xml"
+    app:startDestination="@id/loginFregment">
+
+    <fragment
+        android:id="@+id/regFregment"
+        android:name="com.example.hairqueue.Fregments.RegFregment"
+        android:label="fragment_reg_fregment"
+        tools:layout="@layout/fragment_reg_fregment" />
+    <fragment
+        android:id="@+id/loginFregment"
+        android:name="com.example.hairqueue.Fregments.LoginFregment"
+        android:label="fragment_login_fregment"
+        tools:layout="@layout/fragment_login_fregment" />
+</navigation>
