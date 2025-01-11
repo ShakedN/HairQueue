@@ -3,12 +3,15 @@ package com.example.hairqueue.Fregments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.hairqueue.R;
+import com.example.hairqueue.activities.MainActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -61,6 +64,28 @@ public class LoginFregment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_login_fregment, container, false);
+        View view = inflater.inflate(R.layout.login_fragment, container, false);
+        Button button1 = view.findViewById(R.id.buttonRegister);
+        button1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {// v-> button , view->layout
+                Navigation.findNavController(v).navigate(R.id.action_loginFregment_to_regFregment);
+
+            }
+        });
+
+        Button button2 = view.findViewById(R.id.buttonLogin);
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity mainActivity =(MainActivity) getActivity();
+
+                mainActivity.login(v);
+                //Navigation.findNavController(v).navigate(R.id.action_fragmentOne_to_fragmentthree);
+            }
+
+
+        });
+        return view;
     }
 }
