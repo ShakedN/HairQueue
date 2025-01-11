@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "366656897287",
+    "project_id": "hairqueue-c04c3",
+    "storage_bucket": "hairqueue-c04c3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366656897287:android:94cbb76a7c627c8cd5c5a2",
+        "android_client_info": {
+          "package_name": "com.example.hairqueue"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD21Ab5aAo5c5mVu4n6dkQKts2DMGyGjDQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
