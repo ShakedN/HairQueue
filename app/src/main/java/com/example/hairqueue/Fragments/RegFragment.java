@@ -1,4 +1,4 @@
-package com.example.hairqueue.Fregments;
+package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
 
@@ -12,10 +12,10 @@ import com.example.hairqueue.R;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link RegFregment#newInstance} factory method to
+ * Use the {@link RegFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RegFregment extends Fragment {
+public class RegFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -26,7 +26,7 @@ public class RegFregment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public RegFregment() {
+    public RegFragment() {
         // Required empty public constructor
     }
 
@@ -39,8 +39,8 @@ public class RegFregment extends Fragment {
      * @return A new instance of fragment RegFregment.
      */
     // TODO: Rename and change types and number of parameters
-    public static RegFregment newInstance(String param1, String param2) {
-        RegFregment fragment = new RegFregment();
+    public static RegFragment newInstance(String param1, String param2) {
+        RegFragment fragment = new RegFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);

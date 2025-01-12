@@ -3,16 +3,40 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph.xml"
-    app:startDestination="@id/loginFregment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
-        android:id="@+id/regFregment"
-        android:name="com.example.hairqueue.Fregments.RegFregment"
-        android:label="fragment_reg_fregment"
-        tools:layout="@layout/fragment_reg_fregment" />
+        android:id="@+id/regFragment"
+        android:name="com.example.hairqueue.Fragments.RegFragment"
+        android:label="reg_fragment"
+        tools:layout="@layout/reg_fragment">
+        <action
+            android:id="@+id/action_regFregment_to_loginFregment"
+            app:destination="@id/loginFragment" />
+    </fragment>
     <fragment
-        android:id="@+id/loginFregment"
-        android:name="com.example.hairqueue.Fregments.LoginFregment"
-        android:label="fragment_login_fregment"
-        tools:layout="@layout/fragment_login_fregment" />
+        android:id="@+id/loginFragment"
+        android:name="com.example.hairqueue.Fragments.LoginFragment"
+        android:label="login_fragment"
+        tools:layout="@layout/login_fragment">
+        <action
+            android:id="@+id/action_loginFregment_to_regFregment"
+            app:destination="@id/regFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_adminHomeFragment"
+            app:destination="@id/adminHomeFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_clientHomeFragment"
+            app:destination="@id/clientHomeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/adminHomeFragment"
+        android:name="com.example.hairqueue.Fragments.AdminHomeFragment"
+        android:label="fragment_admin_home"
+        tools:layout="@layout/fragment_admin_home" />
+    <fragment
+        android:id="@+id/clientHomeFragment"
+        android:name="com.example.hairqueue.Fragments.ClientHomeFragment"
+        android:label="fragment_client_home"
+        tools:layout="@layout/fragment_client_home" />
 </navigation>
