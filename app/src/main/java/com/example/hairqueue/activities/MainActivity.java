@@ -14,11 +14,15 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.navigation.Navigation;
 
+import com.example.hairqueue.Data.User;
 import com.example.hairqueue.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -53,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                             // Navigate and pass the Bundle to fragmentthree
-                            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_clientHomeFragment, bundle);
+                            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_adminHomeFragment, bundle);
 
                         } else {
                             Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_LONG).show();
@@ -84,5 +88,36 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+    public void addDATA() {
+        // Get the phone and email from input fields
+        String phone = ((EditText) findViewById(R.id.phone)).getText().toString();
+        String email = ((EditText) findViewById(R.id.email)).getText().toString();
+
+        // Get instance of Firebase Database
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        // Get the current user's UID (to store the data under that user's phone number)
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String uid = currentUser.getUid();  // Use UID if needed for other purposes but not as the key for the phone
+
+            // Reference to the user's data in the database, using phone as the key
+            DatabaseReference userRef = database.getReference("users").child(phone);  // Save by phone number
+
+            // Create a User object with the email and phone number
+            User user = new User(email, phone);
+
+            // Store the user data under the phone number key
+            userRef.setValue(user)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "User data added successfully", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Failed to add user data", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
     }
 }
