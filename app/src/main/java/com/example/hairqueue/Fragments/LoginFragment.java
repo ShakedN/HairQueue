@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.hairqueue.R;
-import com.example.hairqueue.activities.MainActivity;
+import com.example.hairqueue.activities.*;
 
 /**
  * A simple {@link Fragment} subclass.

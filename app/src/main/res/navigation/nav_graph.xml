@@ -7,7 +7,6 @@
 
     <fragment
         android:id="@+id/regFragment"
-        android:name="com.example.hairqueue.Fragments.RegFragment"
         android:label="reg_fragment"
         tools:layout="@layout/reg_fragment">
         <action
@@ -16,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.hairqueue.Fragments.LoginFragment"
+        android:name="com.example.hairqueue.Fragments.LogimFragment"
         android:label="login_fragment"
         tools:layout="@layout/login_fragment">
         <action

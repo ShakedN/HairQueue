@@ -14,7 +14,7 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="287dp"
-        android:src="@drawable/logo" />
+        android:src="@drawable/finallogo" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
