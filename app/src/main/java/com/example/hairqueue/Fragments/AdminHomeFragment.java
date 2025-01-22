@@ -12,8 +12,11 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-import com.example.hairqueue.Data.Appointment;
+import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.R;
+import com.example.hairqueue.Adapters.AppointmentAdapter;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,8 +26,8 @@ public class AdminHomeFragment extends Fragment {
 
     private ListView appointmentsListView;
     private Button loadAppointmentsButton;
-    private List<Appointment> appointments;
-    private com.example.hairqueue.Fragments.AppointmentAdapter appointmentAdapter;
+    private List<AppointmentModel> appointments;
+    private AppointmentAdapter appointmentAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -39,9 +42,8 @@ public class AdminHomeFragment extends Fragment {
         // Initialize the appointments list
         appointments = new ArrayList<>();
 
-        // Set up the adapter for the ListView
-        appointmentAdapter = new com.example.hairqueue.Fragments.AppointmentAdapter(getContext(), appointments);
-        appointmentsListView.setAdapter(appointmentAdapter);
+        // Initialize AppointmentAdapter
+        appointmentAdapter = new AppointmentAdapter(); // No context needed for this implementation
 
         // Set the empty view for the ListView
         TextView emptyView = view.findViewById(android.R.id.empty); // Reference the empty state message
@@ -67,26 +69,28 @@ public class AdminHomeFragment extends Fragment {
             todayDate = DateFormat.format("yyyy-MM-dd", calendar).toString();
         }
 
-        // Here, you would fetch the appointments from your database (Firestore, Realtime Database, etc.)
-        // For now, we simulate adding appointments to the list for demonstration
-        // Example: Simulate adding appointments for the specific date
+        // Fetch appointments from Firebase for the specified date
+        appointmentAdapter.getAppointmentsByDate(todayDate, task -> {
+            if (task.isSuccessful()) {
+                appointments.clear();
+                appointments.addAll(task.getResult());
 
-        appointments.clear();  // Clear any previous appointments
-        appointments.add(new Appointment(todayDate + " 10:00 AM", "John Doe"));
-        appointments.add(new Appointment(todayDate + " 02:00 PM", "Jane Smith"));
+                // Update the ListView with new data
+                appointmentAdapter.notifyDataSetChanged();
 
-        // Update the ListView with new data
-        appointmentAdapter.notifyDataSetChanged();
-
-        // Show a message indicating which day's appointments were loaded
-        String message = isDayOff ? "Appointments for tomorrow have been loaded." : "Appointments for today have been loaded.";
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                // Show a message indicating which day's appointments were loaded
+                String message = isDayOff ? "Appointments for tomorrow have been loaded." : "Appointments for today have been loaded.";
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Error loading appointments.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // Example method to check if it's a day off (you can modify this based on your logic)
     private boolean checkIfDayOff(Calendar calendar) {
         // You can customize this logic, e.g., check if it's a weekend or a holiday.
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.MONDAY;  // Example: Day off on weekends
+        return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;  // Example: Day off on weekends
     }
 }

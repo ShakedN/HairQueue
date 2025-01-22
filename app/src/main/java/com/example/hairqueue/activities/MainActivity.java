@@ -14,7 +14,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.navigation.Navigation;
 
-import com.example.hairqueue.Data.User;
+import com.example.hairqueue.Models.UserModel;
 import com.example.hairqueue.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         // Get the phone and email from input fields
         String phone = ((EditText) findViewById(R.id.phone)).getText().toString();
         String email = ((EditText) findViewById(R.id.email)).getText().toString();
-
+        String full_name= ((EditText)findViewById(R.id.full_name)).getText().toString();
         // Get instance of Firebase Database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -104,10 +104,10 @@ public class MainActivity extends AppCompatActivity {
             String uid = currentUser.getUid();  // Use UID if needed for other purposes but not as the key for the phone
 
             // Reference to the user's data in the database, using phone as the key
-            DatabaseReference userRef = database.getReference("users").child(phone);  // Save by phone number
+            DatabaseReference userRef = database.getReference("users").child(email);  // Save by phone number
 
             // Create a User object with the email and phone number
-            User user = new User(email, phone);
+            UserModel user = new UserModel(email, phone,full_name);
 
             // Store the user data under the phone number key
             userRef.setValue(user)

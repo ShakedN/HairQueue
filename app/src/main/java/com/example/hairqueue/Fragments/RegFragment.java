@@ -1,8 +1,6 @@
 package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,36 +8,31 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.example.hairqueue.Data.User;
 import com.example.hairqueue.R;
 import com.example.hairqueue.activities.MainActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 
 public class RegFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static final String ARG_EMAIL = "email";
+    private static final String ARG_Full_Name="full_name";
     private String mParam1;
     private String mParam2;
     private String getArgEmail;
+    private String getFull_Name;
 
     public RegFragment() {
         // Required empty public constructor
     }
-    public static RegFragment newInstance(String param1, String param2,String email) {
+    public static RegFragment newInstance(String param1, String param2,String email,String full_Name) {
         RegFragment fragment = new RegFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         args.putString(ARG_EMAIL, email);
+        args.putString(ARG_Full_Name,full_Name);
         fragment.setArguments(args);
         return fragment;
     }
@@ -50,6 +43,7 @@ public class RegFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
             getArgEmail=getArguments().getString(ARG_EMAIL);
+            getFull_Name=getArguments().getString(ARG_Full_Name);
         }
     }
 

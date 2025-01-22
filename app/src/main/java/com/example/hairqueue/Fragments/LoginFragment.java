@@ -25,13 +25,11 @@ public class LoginFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static final String ARG_EMAIL = "email";
-
-
-    // TODO: Rename and change types of parameters
+    private static final String ARG_Full_Name="full_name";
     private String mParam1;
     private String mParam2;
     private String getArgEmail;
-
+    private String getFull_Name;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -46,13 +44,13 @@ public class LoginFragment extends Fragment {
      * @return A new instance of fragment LoginFregment.
      */
     // TODO: Rename and change types and number of parameters
-    public static LoginFragment newInstance(String param1, String param2,String email) {
+    public static LoginFragment newInstance(String param1, String param2,String email,String full_Name) {
         LoginFragment fragment = new LoginFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         args.putString(ARG_EMAIL, email);
-
+        args.putString(ARG_Full_Name,full_Name);
         fragment.setArguments(args);
         return fragment;
     }
@@ -64,6 +62,7 @@ public class LoginFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
             getArgEmail=getArguments().getString(ARG_EMAIL);
+            getFull_Name=getArguments().getString(ARG_Full_Name);
 
         }
     }
