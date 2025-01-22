@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- הוספת CalendarView -->
+    <android.widget.CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minDate="01/22/2025" />
+
+    <!-- תצוגת טקסט להצגת התאריך שנבחר -->
+    <TextView
+        android:id="@+id/selectedDateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="none date is selected"
+        android:layout_marginTop="20dp"
+        android:textSize="18sp"
+        android:visibility="gone"/>
+</LinearLayout>

@@ -33,10 +33,19 @@
         android:id="@+id/adminHomeFragment"
         android:name="com.example.hairqueue.Fragments.AdminHomeFragment"
         android:label="fragment_admin_home"
-        tools:layout="@layout/fragment_admin_home" />
+        tools:layout="@layout/fragment_admin_home" >
+        <action
+            android:id="@+id/action_adminHomeFragment_to_scheduleManagement"
+            app:destination="@id/scheduleManagement" />
+    </fragment>
     <fragment
         android:id="@+id/clientHomeFragment"
         android:name="com.example.hairqueue.Fragments.ClientHomeFragment"
         android:label="fragment_client_home"
         tools:layout="@layout/fragment_client_home" />
+    <fragment
+        android:id="@+id/scheduleManagement"
+        android:name="com.example.hairqueue.ScheduleManagement"
+        android:label="fragment_schedule_management"
+        tools:layout="@layout/fragment_schedule_management" />
 </navigation>

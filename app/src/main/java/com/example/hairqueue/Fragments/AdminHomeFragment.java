@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.R;
@@ -92,5 +93,9 @@ public class AdminHomeFragment extends Fragment {
         // You can customize this logic, e.g., check if it's a weekend or a holiday.
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;  // Example: Day off on weekends
+    }
+
+    public void scheduleMangement(View view) {
+         Navigation.findNavController(view).navigate(R.id.action_adminHomeFragment_to_scheduleManagement);
     }
 }
