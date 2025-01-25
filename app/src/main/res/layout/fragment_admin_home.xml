@@ -35,9 +35,9 @@
         android:visibility="gone"/>
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonSchedule"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="schedule mangement "
-        android:onClick="scheduleMangement"/>
+        />
 </LinearLayout>

@@ -29,6 +29,7 @@ public class AdminHomeFragment extends Fragment {
     private Button loadAppointmentsButton;
     private List<AppointmentModel> appointments;
     private AppointmentAdapter appointmentAdapter;
+    private Button buttonScheduleManagement;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,8 +53,15 @@ public class AdminHomeFragment extends Fragment {
 
         // Handle button click to load appointments
         loadAppointmentsButton.setOnClickListener(v -> loadAppointments());
-
+        buttonScheduleManagement=view.findViewById(R.id.buttonSchedule);
+        buttonScheduleManagement.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scheduleMangement(v);
+            }
+        });
         return view;
+
     }
 
     private void loadAppointments() {

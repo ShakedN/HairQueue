@@ -26,6 +26,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
+    private String emailAdmin = "admin@gmail.com";
+    private String passwordAdmin = "admin123";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         });
         mAuth = FirebaseAuth.getInstance();
     }
-    public void login(View view) {
+    public void login(View view,String emailAdmin,String passwordAdmin) {
 
         String email = ((EditText)findViewById(R.id.inputUserName)).getText().toString();
         String password = ((EditText)findViewById(R.id.inputPass)).getText().toString();
@@ -49,17 +51,25 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_LONG).show();
+                            if(email.equals(emailAdmin)&&password.equals(passwordAdmin)) {
+                                Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_LONG).show();
 
-                            // Create a Bundle to pass the email
-                            Bundle bundle = new Bundle();
-                            bundle.putString("email", email);  // Store the email in the Bundle
+                                // Create a Bundle to pass the email
+                                Bundle bundle = new Bundle();
+                                bundle.putString("email", email);  // Store the email in the Bundle
 
 
-                            // Navigate and pass the Bundle to fragmentthree
-                            Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_adminHomeFragment, bundle);
+                                // Navigate and pass the Bundle to fragmentthree
+                                Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_adminHomeFragment, bundle);
+                            }
+                            else{
+                                Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_LONG).show();
+                                view.post(() -> Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_clientHomeFragment));
+                            }
+                        }
 
-                        } else {
+
+                        else {
                             Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_LONG).show();
                         }
                     }
@@ -104,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
             String uid = currentUser.getUid();  // Use UID if needed for other purposes but not as the key for the phone
 
             // Reference to the user's data in the database, using phone as the key
-            DatabaseReference userRef = database.getReference("users").child(email);  // Save by phone number
+            DatabaseReference userRef = database.getReference("users").child(full_name);  // Save by phone number
 
             // Create a User object with the email and phone number
             UserModel user = new UserModel(email, phone,full_name);

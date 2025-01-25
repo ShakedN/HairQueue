@@ -30,6 +30,8 @@ public class LoginFragment extends Fragment {
     private String mParam2;
     private String getArgEmail;
     private String getFull_Name;
+    private String emailAdmin = "admin@gmail.com";
+    private String passwordAdmin = "admin123";
 
     public LoginFragment() {
         // Required empty public constructor
@@ -87,7 +89,7 @@ public class LoginFragment extends Fragment {
             public void onClick(View v) {
                 MainActivity mainActivity =(MainActivity) getActivity();
 
-                mainActivity.login(v);
+                mainActivity.login(v,emailAdmin,passwordAdmin);
                 //Navigation.findNavController(v).navigate(R.id.action_fragmentOne_to_fragmentthree);
             }
 
