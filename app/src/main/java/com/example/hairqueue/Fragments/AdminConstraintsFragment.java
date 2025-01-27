@@ -66,72 +66,109 @@ public class AdminConstraintsFragment extends Fragment {
 
         return view;
     }
+    private void saveConstraints(View v) {
+        View view = getView();
+        if (view == null) return;
 
-private void saveConstraints(View v) {
-    View view = getView(); // Get the root view of the fragment
-    String endTime;
-    if (view == null) {
-        return;
-    }
+        // TimePickers and TextView
+        TimePicker startTimePicker = view.findViewById(R.id.startHourPicker);
+        TimePicker endTimePicker = view.findViewById(R.id.endHourPicker);
+        TimePicker breakStartTimePicker = view.findViewById(R.id.lunchBreakStartPicker);
+        TimePicker breakEndTimePicker = view.findViewById(R.id.lunchBreakEndPicker);
+        TimePicker constraintStartHourPicker = view.findViewById(R.id.constraintStartHourPicker);
+        TimePicker constraintEndHourPicker = view.findViewById(R.id.constraintEndHourPicker);
+        TextView selectedDateTextView = view.findViewById(R.id.selectedDateTextView);
 
-    TimePicker startTimePicker = view.findViewById(R.id.startHourPicker);
-    TimePicker endTimePicker = view.findViewById(R.id.endHourPicker);
-    TimePicker breakStartTimePicker = view.findViewById(R.id.lunchBreakStartPicker);
-    TimePicker breakEndTimePicker = view.findViewById(R.id.lunchBreakEndPicker);
-    TimePicker constraintStartHourPicker = view.findViewById(R.id.constraintStartHourPicker);
-    TimePicker constraintEndHourPicker = view.findViewById(R.id.constraintEndHourPicker);
-    TextView selectedDateTextView = view.findViewById(R.id.selectedDateTextView);
-
-    if (startTimePicker == null || endTimePicker == null || breakStartTimePicker == null || breakEndTimePicker == null || constraintStartHourPicker == null || constraintEndHourPicker == null || selectedDateTextView == null) {
-        Log.e("AdminConstraintsFragment", "One or more views are null");
-        return;
-    }
-
-    int startHour = startTimePicker.getHour();
-    int startMinute = startTimePicker.getMinute();
-    int endHour = endTimePicker.getHour();
-    int endMinute = endTimePicker.getMinute();
-    int breakStartHour = breakStartTimePicker.getHour();
-    int breakStartMinute = breakStartTimePicker.getMinute();
-    int breakEndHour = breakEndTimePicker.getHour();
-    int breakEndMinute = breakEndTimePicker.getMinute();
-    int constraintStartHour = constraintStartHourPicker.getHour();
-    int constraintStartMinute = constraintStartHourPicker.getMinute();
-    int constraintEndHour = constraintEndHourPicker.getHour();
-    int constraintEndMinute = constraintEndHourPicker.getMinute();
-
-    StringBuilder schedule = new StringBuilder();
-    schedule.append("Schedule:\n");
-
-   for (int hour = startHour; hour <= endHour; hour++) {
-    for (int minute = startMinute; minute < 60; minute += 30) {
-        if (hour == endHour && minute >= endMinute) break;
-        if ((hour > breakStartHour || (hour == breakStartHour && minute >= breakStartMinute)) &&
-                (hour < breakEndHour || (hour == breakEndHour && minute < breakEndMinute))) {
-            continue; // Skip lunch break time
-        }
-        if ((hour > constraintStartHour || (hour == constraintStartHour && minute >= constraintStartMinute)) &&
-                (hour < constraintEndHour || (hour == constraintEndHour && minute < constraintEndMinute))) {
-            continue; // Skip constraint time
+        if (startTimePicker == null || endTimePicker == null || breakStartTimePicker == null ||
+                breakEndTimePicker == null || constraintStartHourPicker == null ||
+                constraintEndHourPicker == null || selectedDateTextView == null) {
+            Log.e("AdminConstraintsFragment", "One or more views are null");
+            return;
         }
 
-        String startTime = String.format("%02d:%02d", hour, minute);
-        if ((minute + 30) >= 60) {
-            endTime = String.format("%02d:%02d", hour + 1, (minute + 30) % 60);
-        } else {
-            endTime = String.format("%02d:%02d", hour, (minute + 30) % 60);
-        }
-        AppointmentModel appointment = new AppointmentModel(UUID.randomUUID().toString(), null, selectedDateTextView.getText().toString(), null, "Available", startTime, endTime, 30);
-        schedule.append(startTime).append(" - ").append(endTime).append("\n");
+        // Get values from TimePickers
+        int startHour = startTimePicker.getHour();
+        int startMinute = startTimePicker.getMinute();
+        int endHour = endTimePicker.getHour();
+        int endMinute = endTimePicker.getMinute();
+        int breakStartHour = breakStartTimePicker.getHour();
+        int breakStartMinute = breakStartTimePicker.getMinute();
+        int breakEndHour = breakEndTimePicker.getHour();
+        int breakEndMinute = breakEndTimePicker.getMinute();
+        int constraintStartHour = constraintStartHourPicker.getHour();
+        int constraintStartMinute = constraintStartHourPicker.getMinute();
+        int constraintEndHour = constraintEndHourPicker.getHour();
+        int constraintEndMinute = constraintEndHourPicker.getMinute();
 
-        // Save appointment to Firebase
+        // Extract and clean the selected date
+        String selectedDate = selectedDateTextView.getText().toString().replace("Selected Date: ", "").trim();
+
+        // Firebase setup
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("appointments").child(appointment.getAppointmentId());
-        Log.d("AdminConstraintsFragment", "Saving appointment: " + appointment.toString());
-        ref.setValue(appointment)
-            .addOnSuccessListener(aVoid -> Log.d("Firebase", "Appointment successfully written!"))
-            .addOnFailureListener(e -> Log.w("Firebase", "Error writing document", e));
+        DatabaseReference ref = database.getReference("appointments");
+
+        // Generate appointments
+        StringBuilder schedule = new StringBuilder();
+
+        int currentHour = startHour;
+        int currentMinute = startMinute;
+
+        // Convert times to "minutes from midnight" for easier comparison
+        int breakStartTotalMinutes = breakStartHour * 60 + breakStartMinute;
+        int breakEndTotalMinutes = breakEndHour * 60 + breakEndMinute;
+        int constraintStartTotalMinutes = constraintStartHour * 60 + constraintStartMinute;
+        int constraintEndTotalMinutes = constraintEndHour * 60 + constraintEndMinute;
+
+        while (currentHour < endHour || (currentHour == endHour && currentMinute < endMinute)) {
+            // Convert current time to "minutes from midnight"
+            int currentTotalMinutes = currentHour * 60 + currentMinute;
+            int nextTotalMinutes = currentTotalMinutes + 30; // Adding 30 minutes for the appointment
+
+            // Check if the current time overlaps with the break period
+            if (currentTotalMinutes >= breakStartTotalMinutes && currentTotalMinutes < breakEndTotalMinutes) {
+                currentMinute += 30;
+                if (currentMinute >= 60) {
+                    currentMinute %= 60;
+                    currentHour++;
+                }
+                continue; // Skip the break period
+            }
+
+            // Check if the current time overlaps with the constraint period
+            if (currentTotalMinutes >= constraintStartTotalMinutes && currentTotalMinutes < constraintEndTotalMinutes) {
+                currentMinute += 30;
+                if (currentMinute >= 60) {
+                    currentMinute %= 60;
+                    currentHour++;
+                }
+                continue; // Skip the constraint period
+            }
+
+            // Generate appointment times
+            String startTime = String.format("%02d:%02d", currentHour, currentMinute);
+            int nextHour = nextTotalMinutes / 60;
+            int nextMinute = nextTotalMinutes % 60;
+            String endTime = String.format("%02d:%02d", nextHour, nextMinute);
+
+            // Create and save appointment
+            AppointmentModel appointment = new AppointmentModel(UUID.randomUUID().toString(), null, selectedDate, null, "Available", startTime, endTime, 30);
+            ref.child(appointment.getAppointmentId()).setValue(appointment)
+                    .addOnSuccessListener(aVoid -> Log.d("Firebase", "Appointment saved: " + startTime + " - " + endTime))
+                    .addOnFailureListener(e -> Log.e("Firebase", "Error saving appointment", e));
+
+            // Update schedule for display
+            schedule.append(startTime).append(" - ").append(endTime).append("\n");
+
+            // Increment time by 30 minutes
+            currentMinute += 30;
+            if (currentMinute >= 60) {
+                currentMinute %= 60;
+                currentHour++;
+            }
+        }
+
+        // Update the TextView with the schedule (for display only)
+        selectedDateTextView.setText(schedule.toString());
     }
+
 }
-selectedDateTextView.setText(schedule.toString());
-}}
