@@ -56,6 +56,7 @@ public class ScheduleManagement extends Fragment {
     private void saveSelectedDate(String selectedDate) {
         // Implement your logic to save the selected date
         // For example, you can save it to SharedPreferences, a database, or send it to a server
+
         Toast.makeText(getContext(), "Selected date saved: " + selectedDate, Toast.LENGTH_SHORT).show();
     }
 }
