@@ -1,5 +1,6 @@
 package com.example.hairqueue.Fragments;
 
+import android.app.AlertDialog;
 import android.content.pm.CapabilityParams;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.RadioGroup;
@@ -14,12 +16,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.Models.DateModel;
 import com.example.hairqueue.R;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -36,7 +42,10 @@ public class AdminConstraintsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_constraints, container, false);
-
+        View view2 = inflater.inflate(R.layout.custom_alert_dialog, container, false);
+        TextView alertTitle= view2.findViewById(R.id.alertTitle);
+        TextView alertMessage = view2.findViewById(R.id.alertMessage);
+        ImageView alertIcon = view2.findViewById(R.id.alertIcon);
         // Get the selected date from arguments
         Bundle args = getArguments();
         String selectedDate = args != null ? args.getString("selectedDate") : "No date selected";
@@ -44,19 +53,93 @@ public class AdminConstraintsFragment extends Fragment {
         // Display the selected date
         TextView selectedDateTextView = view.findViewById(R.id.selectedDateTextView);
         selectedDateTextView.setText("Selected Date: " + selectedDate);
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
 
         // Initialize work day options
         workDayOptionsLayout = view.findViewById(R.id.workDayOptionsLayout);
-
+        // Save button
+        saveConstraintsButton = view.findViewById(R.id.saveButton);
         // Set up RadioGroup listener
         RadioGroup dayTypeRadioGroup = view.findViewById(R.id.dayTypeRadioGroup);
         dayTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.workDayRadioButton) {
-                workDayOptionsLayout.setVisibility(View.VISIBLE);
-            } else {
-                workDayOptionsLayout.setVisibility(View.GONE);
-            }
+            DatabaseReference selectedDateRef = dbRef.child(selectedDate);
+
+            selectedDateRef.child("dateStatus").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult().exists()) {
+                    String currentStatus = task.getResult().getValue(String.class);
+
+                    if (checkedId == R.id.workDayRadioButton) {
+                        if ("Day off".equals(currentStatus) || "Sick day".equals(currentStatus)) {
+                            alertTitle.setText("Work day Confirmation");
+                            alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
+                            alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+                            new AlertDialog.Builder(getContext())
+                                    // .setView(R.layout.custom_alert_dialog)
+                                    .setView(view2)
+                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                        dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
+                                    })
+                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                        saveConstraintsButton.setVisibility(View.VISIBLE);
+                                        workDayOptionsLayout.setVisibility(View.VISIBLE);
+                                    })
+                                    .setNegativeButton(android.R.string.no,(dialog, which) -> {
+                                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+                                    })
+
+                                    .show();
+                        } else {
+                            saveConstraintsButton.setVisibility(View.VISIBLE);
+                            workDayOptionsLayout.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    if (checkedId == R.id.dayOffRadioButton) {
+                        if ("Sick day".equals(currentStatus) || "Work day".equals(currentStatus)) {
+                            alertTitle.setText("Day off Confirmation");
+                            alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
+                            alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+                            new AlertDialog.Builder(getContext())
+                                    .setView(view2)
+                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                        dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
+                                    })
+                                    .setNegativeButton(android.R.string.no,(dialog, which) -> {
+                                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+                                    })
+                                    .show();
+
+                        } else {
+                            Toast.makeText(getContext(), "It is already a day off ", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                            if (checkedId == R.id.sickDayRadioButton) {
+                                if ("Day off".equals(currentStatus) || "Work day".equals(currentStatus)) {
+                                    alertTitle.setText("Sick day Confirmation");
+                                    alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
+                                    alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+
+                                    new AlertDialog.Builder(getContext())
+                                            .setView(view2)
+                                            .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                                                dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Sick day", null));
+                                            })
+                                            .setNegativeButton(android.R.string.no,(dialog, which) -> {
+                                                Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+                                            })
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
+                                }
+                                else {
+                                    Toast.makeText(getContext(), "It is already a sick day", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }
+                    });
         });
+
+
 
         // Initialize NumberPickers
         NumberPicker startHourPicker = view.findViewById(R.id.startHourPicker);
@@ -86,8 +169,8 @@ public class AdminConstraintsFragment extends Fragment {
         setupHourPickerConstrains(constraintEndHourPicker);
         setupMinutePickerConstrains(constraintEndMinutePicker);
 
-        // Save button
-        saveConstraintsButton = view.findViewById(R.id.saveButton);
+
+
         saveConstraintsButton.setOnClickListener(v -> saveConstraints(
                 startHourPicker, startMinutePicker, endHourPicker, endMinutePicker,
                 lunchStartHourPicker, lunchStartMinutePicker, lunchEndHourPicker, lunchEndMinutePicker,
@@ -134,6 +217,9 @@ public class AdminConstraintsFragment extends Fragment {
                                  NumberPicker constraintStartHourPicker, NumberPicker constraintStartMinutePicker,
                                  NumberPicker constraintEndHourPicker, NumberPicker constraintEndMinutePicker,
                                  TextView selectedDateTextView) {
+        // Extract selected date
+
+
 
         // Get values from NumberPickers
         int startHour = startHourPicker.getValue();
@@ -252,7 +338,7 @@ public class AdminConstraintsFragment extends Fragment {
         }
 
         // Save appointments to Realtime Database
-        DateModel dateModel = new DateModel(selectedDate, appointments);
+        DateModel dateModel = new DateModel(selectedDate,"Work day" ,appointments);
         dbRef.child(selectedDate).setValue(dateModel)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firebase", "Appointments saved for date: " + selectedDate);
@@ -273,4 +359,24 @@ public class AdminConstraintsFragment extends Fragment {
         }
         return value + 6; // Convert picker value to actual hour (0 -> 6, 1 -> 7, etc.)
     }
+
+    public Task<Boolean> isWorkDay(String date) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("dates").child(date);
+
+        return databaseReference.get().continueWith(task -> {
+            if (!task.isSuccessful() || !task.getResult().exists())
+                return false;
+
+            // Extract `dateStatus` from Firebase
+            String status = task.getResult().child("dateStatus").getValue(String.class);
+            if ("Work day".equals(status)) {
+                Log.d("DEBUG", "Workday found for date: " + date);
+                return true;
+            }
+
+            Log.d("DEBUG", "Not a workday: " + date);
+            return false;
+        });
+    }
+
 }
