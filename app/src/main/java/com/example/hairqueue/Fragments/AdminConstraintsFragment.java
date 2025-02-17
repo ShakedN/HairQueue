@@ -103,12 +103,14 @@ public class AdminConstraintsFragment extends Fragment {
         hourPicker.setMaxValue(23);
         hourPicker.setWrapSelectorWheel(true);
     }
+
     private void setupHourPickerConstrains(NumberPicker hourPicker) {
         hourPicker.setMinValue(0);
         hourPicker.setMaxValue(18);
-        hourPicker.setDisplayedValues(new String[]{ "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "None"});
+        hourPicker.setDisplayedValues(new String[]{"06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "None"});
         hourPicker.setWrapSelectorWheel(true);
     }
+
     private void setupMinutePickerConstrains(NumberPicker minutePicker) {
         minutePicker.setMinValue(0);
         minutePicker.setMaxValue(2);
@@ -125,139 +127,109 @@ public class AdminConstraintsFragment extends Fragment {
     }
 
 
-    private void saveConstraints(
-            NumberPicker startHourPicker, NumberPicker startMinutePicker,
-            NumberPicker endHourPicker, NumberPicker endMinutePicker,
-            NumberPicker lunchStartHourPicker, NumberPicker lunchStartMinutePicker,
-            NumberPicker lunchEndHourPicker, NumberPicker lunchEndMinutePicker,
-            NumberPicker constraintStartHourPicker, NumberPicker constraintStartMinutePicker,
-            NumberPicker constraintEndHourPicker, NumberPicker constraintEndMinutePicker,
-            TextView selectedDateTextView) {
+    private void saveConstraints(NumberPicker startHourPicker, NumberPicker startMinutePicker,
+                                 NumberPicker endHourPicker, NumberPicker endMinutePicker,
+                                 NumberPicker lunchStartHourPicker, NumberPicker lunchStartMinutePicker,
+                                 NumberPicker lunchEndHourPicker, NumberPicker lunchEndMinutePicker,
+                                 NumberPicker constraintStartHourPicker, NumberPicker constraintStartMinutePicker,
+                                 NumberPicker constraintEndHourPicker, NumberPicker constraintEndMinutePicker,
+                                 TextView selectedDateTextView) {
 
-        // Get regular working hours
+        // Get values from NumberPickers
         int startHour = startHourPicker.getValue();
-        int startMinute = startMinutePicker.getValue() * 30;
+        int startMinute = startMinutePicker.getValue() * 30; // 00 or 30
         int endHour = endHourPicker.getValue();
         int endMinute = endMinutePicker.getValue() * 30;
+        int lunchStartTotalMinutes = (lunchStartHourPicker.getValue() * 60) + (lunchStartMinutePicker.getValue() * 30);
+        int lunchEndTotalMinutes = (lunchEndHourPicker.getValue() * 60) + (lunchEndMinutePicker.getValue() * 30);
 
-        // Get lunch break times
-        int lunchStartHour = lunchStartHourPicker.getValue();
-        int lunchStartMinute = lunchStartMinutePicker.getValue() * 30;
-        int lunchEndHour = lunchEndHourPicker.getValue();
-        int lunchEndMinute = lunchEndMinutePicker.getValue() * 30;
+        // Check if either constraint time is "None"
+        boolean isStartNone = constraintStartMinutePicker.getValue() == 2 || constraintStartHourPicker.getValue() == 18;
+        boolean isEndNone = constraintEndMinutePicker.getValue() == 2 || constraintEndHourPicker.getValue() == 18;
 
-        int lunchStartTotalMinutes = (lunchStartHour * 60) + lunchStartMinute;
-        int lunchEndTotalMinutes = (lunchEndHour * 60) + lunchEndMinute;
+        // Calculate constraint times only if they're not "None"
+        int constraintStartTotalMinutes = isStartNone ? -1 :
+                (getActualHourFromConstraintPicker(constraintStartHourPicker) * 60) +
+                        (constraintStartMinutePicker.getValue() * 30);
 
-        // Get constraint times with proper conversion
-        int constraintStartHour = getActualHourFromConstraintPicker(constraintStartHourPicker);
-        int constraintEndHour = getActualHourFromConstraintPicker(constraintEndHourPicker);
+        int constraintEndTotalMinutes = isEndNone ? -1 :
+                (getActualHourFromConstraintPicker(constraintEndHourPicker) * 60) +
+                        (constraintEndMinutePicker.getValue() * 30);
 
-        // Calculate total minutes for constraints
-        int constraintStartTotalMinutes = -1;
-        int constraintEndTotalMinutes = -1;
-
-        if (constraintStartHour != -1 && constraintStartMinutePicker.getValue() != 2) {
-            constraintStartTotalMinutes = (constraintStartHour * 60) +
-                    (constraintStartMinutePicker.getValue() * 30);
-        }
-
-        if (constraintEndHour != -1 && constraintEndMinutePicker.getValue() != 2) {
-            constraintEndTotalMinutes = (constraintEndHour * 60) +
-                    (constraintEndMinutePicker.getValue() * 30);
-        }
-
-        // Debug logging
-        Log.d("Time Debug", String.format("Working Hours: %02d:%02d - %02d:%02d",
-                startHour, startMinute, endHour, endMinute));
-        Log.d("Time Debug", String.format("Lunch Break: %02d:%02d - %02d:%02d",
-                lunchStartHour, lunchStartMinute, lunchEndHour, lunchEndMinute));
-        Log.d("Time Debug", String.format("Constraints: %02d:%02d - %02d:%02d",
-                constraintStartHour, constraintStartMinutePicker.getValue() * 30,
-                constraintEndHour, constraintEndMinutePicker.getValue() * 30));
-
-        // Validate time selections
+        // Validate working hours
         if (startHour > endHour || (startHour == endHour && startMinute >= endMinute)) {
             Toast.makeText(getContext(), "Invalid working hours! Start time must be before end time.",
                     Toast.LENGTH_LONG).show();
             return;
         }
 
+        // Validate lunch break
         if (lunchStartTotalMinutes >= lunchEndTotalMinutes) {
-            Toast.makeText(getContext(), "Invalid lunch break! Start must be before end time.",
+            Toast.makeText(getContext(), "Invalid lunch break! Start time must be before end time.",
                     Toast.LENGTH_LONG).show();
             return;
         }
 
-        if (constraintStartTotalMinutes != -1 && constraintEndTotalMinutes != -1 &&
-                constraintStartTotalMinutes >= constraintEndTotalMinutes) {
-            Toast.makeText(getContext(), "Invalid constraint times! Start must be before end time.",
+        // Validate constraints - both must be set or both must be "None"
+        if ((isStartNone && !isEndNone) || (!isStartNone && isEndNone)) {
+            Toast.makeText(getContext(),
+                    "Both constraint times must be set, or both must be 'None'",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // If both constraints are set, validate their order
+        if (!isStartNone && !isEndNone && constraintStartTotalMinutes >= constraintEndTotalMinutes) {
+            Toast.makeText(getContext(),
+                    "Invalid constraint times! Start must be before end time.",
                     Toast.LENGTH_LONG).show();
             return;
         }
 
         // Extract selected date
-        String selectedDate = selectedDateTextView.getText().toString()
-                .replace("Selected Date: ", "").trim();
+        String selectedDate = selectedDateTextView.getText().toString().replace("Selected Date: ", "").trim();
 
         // Firebase setup
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
 
         StringBuilder schedule = new StringBuilder();
+        int currentHour = startHour;
+        int currentMinute = startMinute;
         List<AppointmentModel> appointments = new ArrayList<>();
 
-        // Convert working hours to total minutes
-        int currentTotalMinutes = (startHour * 60) + startMinute;
-        int totalEndMinutes = (endHour * 60) + endMinute;
+        while (currentHour < endHour || (currentHour == endHour && currentMinute < endMinute)) {
+            int currentTotalMinutes = (currentHour * 60) + currentMinute;
+            int nextTotalMinutes = currentTotalMinutes + 30;
 
-        while (currentTotalMinutes < totalEndMinutes) {
-            int nextTotalMinutes = currentTotalMinutes + 30;  // 30-minute appointments
-
-            // Check for lunch break overlap
-            boolean isLunchTime = false;
-            if (lunchStartTotalMinutes != -1 && lunchEndTotalMinutes != -1) {
-                isLunchTime = (currentTotalMinutes >= lunchStartTotalMinutes &&
-                        currentTotalMinutes < lunchEndTotalMinutes) ||
-                        (lunchStartTotalMinutes >= currentTotalMinutes &&
-                                lunchStartTotalMinutes < nextTotalMinutes);
-            }
-
-            // Check for constraint time overlap
-            boolean isConstrainedTime = false;
-            if (constraintStartTotalMinutes != -1 && constraintEndTotalMinutes != -1) {
-                isConstrainedTime = (currentTotalMinutes >= constraintStartTotalMinutes &&
-                        currentTotalMinutes < constraintEndTotalMinutes) ||
-                        (constraintStartTotalMinutes >= currentTotalMinutes &&
-                                constraintStartTotalMinutes < nextTotalMinutes);
-            }
-
-            // Debug logging for time slot checking
-            Log.d("Slot Debug", String.format("Checking slot %02d:%02d - %02d:%02d",
-                    currentTotalMinutes / 60, currentTotalMinutes % 60,
-                    nextTotalMinutes / 60, nextTotalMinutes % 60));
-            Log.d("Slot Debug", "isLunchTime: " + isLunchTime + ", isConstrainedTime: " + isConstrainedTime);
-
-            // Skip if time slot is during lunch or constrained time
-            if (isLunchTime || isConstrainedTime) {
-                currentTotalMinutes += 30;
+            // Skip appointment if it falls within lunch break
+            if (currentTotalMinutes >= lunchStartTotalMinutes && currentTotalMinutes < lunchEndTotalMinutes) {
+                currentMinute += 30;
+                if (currentMinute >= 60) {
+                    currentMinute = 0;
+                    currentHour++;
+                }
                 continue;
             }
 
-            // Stop if next appointment would exceed working hours
-            if (nextTotalMinutes > totalEndMinutes) {
-                break;
+            // Skip appointment if constraints are set (both must be set at this point) and time falls within constraint period
+            if (!isStartNone && !isEndNone &&
+                    currentTotalMinutes >= constraintStartTotalMinutes &&
+                    currentTotalMinutes < constraintEndTotalMinutes) {
+                currentMinute += 30;
+                if (currentMinute >= 60) {
+                    currentMinute = 0;
+                    currentHour++;
+                }
+                continue;
             }
 
-            // Convert current time slot to hour:minute format
-            int currentHour = currentTotalMinutes / 60;
-            int currentMinute = currentTotalMinutes % 60;
+            // Generate appointment times
+            String startTime = String.format("%02d:%02d", currentHour, currentMinute);
             int nextHour = nextTotalMinutes / 60;
             int nextMinute = nextTotalMinutes % 60;
-
-            String startTime = String.format("%02d:%02d", currentHour, currentMinute);
             String endTime = String.format("%02d:%02d", nextHour, nextMinute);
 
-            // Create and add appointment
+            // Create appointment
             AppointmentModel appointment = new AppointmentModel(
                     UUID.randomUUID().toString(),
                     null,
@@ -270,20 +242,21 @@ public class AdminConstraintsFragment extends Fragment {
             );
             appointments.add(appointment);
 
-            // Add to schedule display
             schedule.append(startTime).append(" - ").append(endTime).append("\n");
 
-            // Move to next slot
-            currentTotalMinutes += 30;
+            currentMinute += 30;
+            if (currentMinute >= 60) {
+                currentMinute = 0;
+                currentHour++;
+            }
         }
 
-        // Create date model and save to Firebase
+        // Save appointments to Realtime Database
         DateModel dateModel = new DateModel(selectedDate, appointments);
         dbRef.child(selectedDate).setValue(dateModel)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firebase", "Appointments saved for date: " + selectedDate);
                     Toast.makeText(getContext(), "Schedule saved successfully!", Toast.LENGTH_SHORT).show();
-                    // Update the display
                     selectedDateTextView.setText("Selected Date: " + selectedDate + "\n\n" + schedule.toString());
                 })
                 .addOnFailureListener(e -> {
@@ -300,7 +273,4 @@ public class AdminConstraintsFragment extends Fragment {
         }
         return value + 6; // Convert picker value to actual hour (0 -> 6, 1 -> 7, etc.)
     }
-
-
-
 }
