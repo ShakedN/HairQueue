@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.hairqueue.Adapters.AppointmentAdapter;
 import com.example.hairqueue.Models.AppointmentModel;
@@ -105,10 +106,10 @@ public class ClientHomeFragment extends Fragment {
         recyclerView = view.findViewById(R.id.rvAvailableAppointments);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         upcomingAppointments = new ArrayList<>();
-        //appointmentAdapter = new AppointmentAdapter(upcomingAppointments);
-        //recyclerView.setAdapter(appointmentAdapter);
+        appointmentAdapter = new AppointmentAdapter(upcomingAppointments);
+        recyclerView.setAdapter(appointmentAdapter);
 
-        loadUpcomingAppointments();
+        loadAvailableAppointments();
 
         return view;
     }
@@ -165,61 +166,33 @@ public class ClientHomeFragment extends Fragment {
     }
 
 
-    private void loadUpcomingAppointments() {
-        // Get current date
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+    private void loadAvailableAppointments(String date) {
+        appointmentAdapter.getAppointmentsByDate(date, task -> {
+            if (task.isSuccessful()) {
+                List<AppointmentModel> allAppointments = task.getResult();
+                if (allAppointments == null) {
+                    allAppointments = new ArrayList<>();
+                }
 
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-
-        // Fetch appointments starting from current date onwards
-        dbRef.child("dates").orderByKey().startAt(currentDate).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                List<AppointmentModel> allAppointments = new ArrayList<>();
-                // Loop through all the dates and fetch appointments for each date
-                for (DataSnapshot dateSnapshot : snapshot.getChildren()) {
-                    // Loop through the appointments for the given date
-                    String date = dateSnapshot.getKey();  // e.g., "2025-02-27"
-                    for (DataSnapshot appointmentSnapshot : dateSnapshot.child("appointments").getChildren()) {
-                        AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
-                        if (appointment != null && "Available".equals(appointment.getStatus())) {
-                            allAppointments.add(appointment);
-                        }
+                availableAppointments.clear();
+                for (AppointmentModel appointment : allAppointments) {
+                    if ("Available".equals(appointment.getStatus())) {
+                        availableAppointments.add(appointment);
                     }
                 }
-                filterAndSortAppointments(allAppointments);
-            }
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Log.e("Appointments", "Failed to fetch appointments", error.toException());
-            }
-        });
-    }
-
-
-
-    private void filterAndSortAppointments(List<AppointmentModel> allAppointments) {
-        // Sort appointments based on start time (earliest first)
-        allAppointments.sort((appointment1, appointment2) -> {
-            try {
-                // Make sure startTime is in a parsable format (e.g. "yyyy-MM-dd HH:mm")
-                Date startDate1 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(appointment1.getDate() + " " + appointment1.getStartTime());
-                Date startDate2 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(appointment2.getDate() + " " + appointment2.getStartTime());
-                return startDate1.compareTo(startDate2);
-            } catch (ParseException e) {
-                e.printStackTrace();
-                return 0; // Return 0 if there was an error parsing the date
+                // Update ListView with the custom adapter
+                AppointmentListAdapter adapter = new AppointmentListAdapter(getContext(), availableAppointments);
+                availableAppointmentsListView.setAdapter(adapter);
+                if(availableAppointments.size() == 0) {
+                    Toast.makeText(getContext(), "No available appointments for " + date, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Loaded available appointments for " + date, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Error loading appointments.", Toast.LENGTH_SHORT).show();
             }
         });
-
-        // Now you have the sorted list, you can update your RecyclerView
-        // Assuming 'upcomingAppointments' is the list connected to the RecyclerView
-        upcomingAppointments.clear();
-        upcomingAppointments.addAll(allAppointments);
-
-        // Notify the adapter to update the RecyclerView
-        appointmentAdapter.notifyDataSetChanged();
     }
 
 
