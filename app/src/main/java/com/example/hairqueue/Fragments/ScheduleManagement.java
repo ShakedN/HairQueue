@@ -1,10 +1,10 @@
-// ScheduleManagement.java
 package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,6 +17,9 @@ public class ScheduleManagement extends Fragment {
 
     private CalendarView calendarView;
     private TextView selectedDateTextView;
+    private Button btnShowConstraints;
+    private Button btnShowAvailableAppointments;
+    private Button btnShowOccupiedAppointments;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -27,36 +30,44 @@ public class ScheduleManagement extends Fragment {
         // Initialize the CalendarView and TextView
         calendarView = view.findViewById(R.id.calendarView);
         selectedDateTextView = view.findViewById(R.id.selectedDateTextView);
+        btnShowConstraints = view.findViewById(R.id.btnShowConstraints);
+        btnShowAvailableAppointments = view.findViewById(R.id.btnShowAvailableAppointments);
+        btnShowOccupiedAppointments = view.findViewById(R.id.btnShowOccupiedAppointments);
 
         // Set the OnDateChangeListener to handle date selection
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-                // Format the selected date
-                String selectedDate = year + "-" + (month + 1) + "-" + dayOfMonth;
+        calendarView.setOnDateChangeListener((view1, year, month, dayOfMonth) -> {
+            // Format the selected date
+            String selectedDate = year + "-" + (month + 1) + "-" + dayOfMonth;
 
-                // Display the selected date in the TextView
-                selectedDateTextView.setText("Selected Date: " + selectedDate);
-                selectedDateTextView.setVisibility(View.VISIBLE);
+            // Display the selected date in the TextView
+            selectedDateTextView.setText("Selected Date: " + selectedDate);
+            selectedDateTextView.setVisibility(View.VISIBLE);
 
-                // Save the selected date (you can customize this part to save the date as needed)
-                saveSelectedDate(selectedDate);
+            // Show the buttons
+            btnShowConstraints.setVisibility(View.VISIBLE);
+            btnShowAvailableAppointments.setVisibility(View.VISIBLE);
+            btnShowOccupiedAppointments.setVisibility(View.VISIBLE);
 
-                // Navigate to AdminFragmentConstraints with the selected date
+            // Set click listeners for the buttons
+            btnShowConstraints.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("selectedDate", selectedDate);
-                NavHostFragment.findNavController(ScheduleManagement.this)
-                        .navigate(R.id.action_scheduleManagement_to_adminFragmentConstraints, bundle);
-            }
+                Navigation.findNavController(v).navigate(R.id.action_scheduleManagement_to_adminFragmentConstraints, bundle);
+            });
+
+            btnShowAvailableAppointments.setOnClickListener(v -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("selectedDate", selectedDate);
+                Navigation.findNavController(v).navigate(R.id.action_scheduleManagement_to_availableAppointmentsFragment, bundle);
+            });
+
+            btnShowOccupiedAppointments.setOnClickListener(v -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("selectedDate", selectedDate);
+                Navigation.findNavController(v).navigate(R.id.action_scheduleManagement_to_occupiedAppointmentsFragment, bundle);
+            });
         });
 
         return view;
-    }
-
-    private void saveSelectedDate(String selectedDate) {
-        // Implement your logic to save the selected date
-        // For example, you can save it to SharedPreferences, a database, or send it to a server
-
-        Toast.makeText(getContext(), "Selected date saved: " + selectedDate, Toast.LENGTH_SHORT).show();
     }
 }

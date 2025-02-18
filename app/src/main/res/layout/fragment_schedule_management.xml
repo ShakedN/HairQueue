@@ -1,24 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/background_beige">
 
-    <!-- הוספת CalendarView -->
-    <android.widget.CalendarView
-        android:id="@+id/calendarView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minDate="01/22/2025" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- תצוגת טקסט להצגת התאריך שנבחר -->
-    <TextView
-        android:id="@+id/selectedDateTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="none date is selected"
-        android:layout_marginTop="20dp"
-        android:textSize="18sp"
-        android:visibility="gone"/>
-</LinearLayout>
+        <!-- Calendar in a CardView for a modern look -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="16dp"
+            android:background="@android:color/white">
+
+            <CalendarView
+                android:id="@+id/calendarView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minDate="01/22/2025" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Selected Date TextView -->
+        <TextView
+            android:id="@+id/selectedDateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No date selected"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"/>
+
+        <!-- Buttons Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/btnShowConstraints"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Show Constraints"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/secondary"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btnShowAvailableAppointments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Show Available Appointments"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/secondary"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btnShowOccupiedAppointments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Show Occupied Appointments"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/secondary"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

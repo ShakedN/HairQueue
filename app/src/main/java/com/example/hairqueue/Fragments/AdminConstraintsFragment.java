@@ -204,12 +204,14 @@ public class AdminConstraintsFragment extends Fragment {
         setupHourPickerConstrains(constraintEndHourPicker);
         setupMinutePickerConstrains(constraintEndMinutePicker);
 
-        saveConstraintsButton.setOnClickListener(v -> saveConstraints(
+        saveConstraintsButton.setOnClickListener(v ->
+
+                saveConstraints(
                 startHourPicker, startMinutePicker, endHourPicker, endMinutePicker,
                 lunchStartHourPicker, lunchStartMinutePicker, lunchEndHourPicker, lunchEndMinutePicker,
                 constraintStartHourPicker, constraintStartMinutePicker, constraintEndHourPicker, constraintEndMinutePicker,
                 selectedDateTextView
-        ));
+                ));
 
         return view;
     }
@@ -372,7 +374,11 @@ public class AdminConstraintsFragment extends Fragment {
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firebase", "Appointments saved for date: " + selectedDate);
                     Toast.makeText(getContext(), "Schedule saved successfully!", Toast.LENGTH_SHORT).show();
-                    selectedDateTextView.setText("Selected Date: " + selectedDate + "\n\n" + schedule.toString());
+                    saveConstraintsButton.setVisibility(View.GONE);
+                    workDayOptionsLayout.setVisibility(View.GONE);
+                   // selectedDateTextView.setText("Selected Date: " + selectedDate + "\n\n" + schedule.toString());
+                    selectedDateTextView.setText("Selected Date: " + selectedDate);
+
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Firebase", "Error saving appointments", e);
