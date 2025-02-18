@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="@color/background_beige"
+    android:fontFamily="@font/roboto">
+
+    <!-- Date TextView -->
+    <TextView
+        android:id="@+id/dateTextView"
+        android:text="2025-02-17"
+        android:textSize="16sp"
+        android:textColor="@color/primary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!-- Start time and end time -->
+    <TextView
+        android:id="@+id/timeTextView"
+        android:text="19:30 - 20:00"
+        android:textSize="14sp"
+        android:textColor="@color/primary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!-- Status TextView -->
+    <TextView
+        android:id="@+id/statusTextView"
+        android:text="Available"
+        android:textSize="14sp"
+        android:textColor="@color/secondary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end" /> <!-- Aligns status to the right -->
+
+</LinearLayout>

@@ -46,6 +46,7 @@ public class AdminConstraintsFragment extends Fragment {
         selectedDateTextView.setText("Selected Date: " + selectedDate);
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
 
+
         // Initialize work day options
         workDayOptionsLayout = view.findViewById(R.id.workDayOptionsLayout);
         // Save button
@@ -349,13 +350,12 @@ public class AdminConstraintsFragment extends Fragment {
             // Create appointment
             AppointmentModel appointment = new AppointmentModel(
                     UUID.randomUUID().toString(),
-                    null,
                     selectedDate,
-                    null,
-                    "Available",
-                    startTime,
+                    30,
                     endTime,
-                    30
+                    startTime,
+                    "Available"
+
             );
             appointments.add(appointment);
 

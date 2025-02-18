@@ -2,13 +2,39 @@ package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import com.example.hairqueue.Adapters.AppointmentAdapter;
+import com.example.hairqueue.Models.AppointmentModel;
+import com.example.hairqueue.Models.DateModel;
+import com.example.hairqueue.Models.UserModel;
 import com.example.hairqueue.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +51,12 @@ public class ClientHomeFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private FirebaseAuth mAuth;
+    private TextView greetingTextView;
+    private RecyclerView recyclerView;
+    private AppointmentAdapter appointmentAdapter;
+    private List<AppointmentModel> upcomingAppointments;
+    private DatabaseReference dbRef;
 
     public ClientHomeFragment() {
         // Required empty public constructor
@@ -61,6 +93,137 @@ public class ClientHomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_client_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_client_home, container, false);
+        greetingTextView = view.findViewById(R.id.greetingTextView);
+        if (greetingTextView != null) {
+            mAuth = FirebaseAuth.getInstance();
+            getUserName();
+        } else {
+            Log.e("Fragment Error", "GreetingTextView is null");
+        }
+
+        recyclerView = view.findViewById(R.id.rvAvailableAppointments);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        upcomingAppointments = new ArrayList<>();
+        //appointmentAdapter = new AppointmentAdapter(upcomingAppointments);
+        //recyclerView.setAdapter(appointmentAdapter);
+
+        loadUpcomingAppointments();
+
+        return view;
     }
+
+    public void getUserName() {
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+
+        // Get the currently logged-in user
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        // If the user is logged in
+        if (user != null) {
+            // Retrieve the email of the logged-in user (to identify them)
+            String email = user.getEmail();
+
+            // Access all users in Firebase Database
+            DatabaseReference usersRef = database.child("users");
+
+            // Listen for changes
+            usersRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // Loop through each user in the database
+                    for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                        // Retrieve the full name and email of the user
+                        String fullName = userSnapshot.child("fullName").getValue(String.class);
+                        String userEmail = userSnapshot.child("email").getValue(String.class);
+
+                        // If the full name and email match the logged-in user’s details
+                        if (email != null && email.equals(userEmail)) {
+                            // Found the user, now retrieve their full name
+                            Log.d("User Info", "Hello, " + fullName);
+
+                            // Update the TextView on the screen
+                            if (greetingTextView != null) {
+                                greetingTextView.setText("Hello, " + fullName); // Update the text
+                            }
+
+                            break; // User found, no need to continue searching
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    // Handle errors if something went wrong
+                    Log.w("Database Error", "Failed to read value.", databaseError.toException());
+                }
+            });
+        } else {
+            // If no user is logged in
+            Log.d("User Error", "No user is logged in");
+        }
+    }
+
+
+    private void loadUpcomingAppointments() {
+        // Get current date
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+
+        // Fetch appointments starting from current date onwards
+        dbRef.child("dates").orderByKey().startAt(currentDate).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                List<AppointmentModel> allAppointments = new ArrayList<>();
+                // Loop through all the dates and fetch appointments for each date
+                for (DataSnapshot dateSnapshot : snapshot.getChildren()) {
+                    // Loop through the appointments for the given date
+                    String date = dateSnapshot.getKey();  // e.g., "2025-02-27"
+                    for (DataSnapshot appointmentSnapshot : dateSnapshot.child("appointments").getChildren()) {
+                        AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
+                        if (appointment != null && "Available".equals(appointment.getStatus())) {
+                            allAppointments.add(appointment);
+                        }
+                    }
+                }
+                filterAndSortAppointments(allAppointments);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.e("Appointments", "Failed to fetch appointments", error.toException());
+            }
+        });
+    }
+
+
+
+    private void filterAndSortAppointments(List<AppointmentModel> allAppointments) {
+        // Sort appointments based on start time (earliest first)
+        allAppointments.sort((appointment1, appointment2) -> {
+            try {
+                // Make sure startTime is in a parsable format (e.g. "yyyy-MM-dd HH:mm")
+                Date startDate1 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(appointment1.getDate() + " " + appointment1.getStartTime());
+                Date startDate2 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(appointment2.getDate() + " " + appointment2.getStartTime());
+                return startDate1.compareTo(startDate2);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                return 0; // Return 0 if there was an error parsing the date
+            }
+        });
+
+        // Now you have the sorted list, you can update your RecyclerView
+        // Assuming 'upcomingAppointments' is the list connected to the RecyclerView
+        upcomingAppointments.clear();
+        upcomingAppointments.addAll(allAppointments);
+
+        // Notify the adapter to update the RecyclerView
+        appointmentAdapter.notifyDataSetChanged();
+    }
+
+
+
+
+
 }
