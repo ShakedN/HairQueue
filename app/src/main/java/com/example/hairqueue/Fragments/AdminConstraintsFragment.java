@@ -45,6 +45,7 @@ public class AdminConstraintsFragment extends Fragment {
         TextView selectedDateTextView = view.findViewById(R.id.selectedDateTextView);
         selectedDateTextView.setText("Selected Date: " + selectedDate);
 
+
         // Initialize work day options
         workDayOptionsLayout = view.findViewById(R.id.workDayOptionsLayout);
 
@@ -260,13 +261,12 @@ public class AdminConstraintsFragment extends Fragment {
             // Create and add appointment
             AppointmentModel appointment = new AppointmentModel(
                     UUID.randomUUID().toString(),
-                    null,
                     selectedDate,
-                    null,
-                    "Available",
-                    startTime,
+                    30,
                     endTime,
-                    30
+                    startTime,
+                    "Available"
+
             );
             appointments.add(appointment);
 

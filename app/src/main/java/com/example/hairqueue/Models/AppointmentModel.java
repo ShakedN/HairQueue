@@ -10,15 +10,18 @@ public class AppointmentModel {
     String endTime;
     int duration;
 
-    public AppointmentModel(String appointmentId, String email, String date, String service, String status, String startTime, String endTime, int duration) {
+    public AppointmentModel(String appointmentId, String date, int duration, String endTime, String startTime, String status) {
         this.appointmentId = appointmentId;
-        this.email = email;
         this.date = date;
-        this.service = service;
-        this.status = status;
-        this.startTime = startTime;
-        this.endTime = endTime;
         this.duration = duration;
+        this.endTime = endTime;
+        this.startTime = startTime;
+        this.status = status;
+    }
+
+    // קונסטרקטור ברירת מחדל
+    public AppointmentModel() {
+        // קונסטרקטור ריק
     }
     public String getAppointmentId() {
         return appointmentId;
