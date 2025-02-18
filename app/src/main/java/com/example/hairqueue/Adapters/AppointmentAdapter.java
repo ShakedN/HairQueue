@@ -97,4 +97,26 @@ public class AppointmentAdapter {
     public void notifyDataSetChanged() {
         // Implement this method to notify the adapter of data changes
     }
+    public void getAllAppointments(final OnCompleteListener<List<AppointmentModel>> listener) {
+        List<AppointmentModel> allAppointments = new ArrayList<>();
+        dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dateSnapshot : snapshot.getChildren()) {
+                    for (DataSnapshot appointmentSnapshot : dateSnapshot.child("appointments").getChildren()) {
+                        AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
+                        allAppointments.add(appointment);
+                    }
+                }
+                listener.onComplete(Tasks.forResult(allAppointments));
+                Log.d("AppointmentAdapter", "All appointments successfully fetched from Firebase!");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                listener.onComplete(Tasks.forException(error.toException()));
+                Log.w("AppointmentAdapter", "Error getting all appointments.", error.toException());
+            }
+        });
+    }
 }

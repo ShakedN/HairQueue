@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <corners android:radius="20dp"/>
+    <!-- Increased corner radius for a more circular effect -->
+    <corners android:radius="70dp"/>
+
+    <!-- Background color -->
     <solid android:color="@android:color/white"/>
-    <padding android:left="16dp" android:top="16dp" android:right="16dp" android:bottom="16dp"/>
+
+    <!-- Inner padding to keep content spaced nicely -->
+    <padding android:left="24dp" android:top="24dp" android:right="24dp" android:bottom="24dp"/>
+
+    <shadowColor android:color="#55000000" />
+    <shadowRadius android:radius="10dp"/>
 </shape>

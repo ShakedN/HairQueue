@@ -1,7 +1,6 @@
 package com.example.hairqueue.Fragments;
 
 import android.app.AlertDialog;
-import android.content.pm.CapabilityParams;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,13 +20,8 @@ import androidx.navigation.Navigation;
 import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.Models.DateModel;
 import com.example.hairqueue.R;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +36,7 @@ public class AdminConstraintsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_constraints, container, false);
-        View view2 = inflater.inflate(R.layout.custom_alert_dialog, container, false);
-        TextView alertTitle= view2.findViewById(R.id.alertTitle);
-        TextView alertMessage = view2.findViewById(R.id.alertMessage);
-        ImageView alertIcon = view2.findViewById(R.id.alertIcon);
+
         // Get the selected date from arguments
         Bundle args = getArguments();
         String selectedDate = args != null ? args.getString("selectedDate") : "No date selected";
@@ -63,83 +54,127 @@ public class AdminConstraintsFragment extends Fragment {
         RadioGroup dayTypeRadioGroup = view.findViewById(R.id.dayTypeRadioGroup);
         dayTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             DatabaseReference selectedDateRef = dbRef.child(selectedDate);
-
             selectedDateRef.child("dateStatus").get().addOnCompleteListener(task -> {
                 if (task.isSuccessful() && task.getResult().exists()) {
                     String currentStatus = task.getResult().getValue(String.class);
 
+                    // Inflate the custom alert dialog layout
+                    View view2 = inflater.inflate(R.layout.custom_alert_dialog, container, false);
+                    TextView alertTitle = view2.findViewById(R.id.alertTitle);
+                    TextView alertMessage = view2.findViewById(R.id.alertMessage);
+                    ImageView alertIcon = view2.findViewById(R.id.alertIcon);
+                    Button okButton = view2.findViewById(R.id.btnConfirm);
+                    Button cancelButton = view2.findViewById(R.id.btnCancel);
+
+                    // Show your custom AlertDialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setView(view2);
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+                    alertDialog.show();
+
+                    // Cancel Button Action
+                    cancelButton.setOnClickListener(v -> {
+                        alertDialog.dismiss();
+                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+                    });
+
+                    // Handle Work Day Selection
                     if (checkedId == R.id.workDayRadioButton) {
                         if ("Day off".equals(currentStatus) || "Sick day".equals(currentStatus)) {
-                            alertTitle.setText("Work day Confirmation");
+                            alertTitle.setText("Work Day Confirmation");
                             alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
                             alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
-                            new AlertDialog.Builder(getContext())
-                                    // .setView(R.layout.custom_alert_dialog)
-                                    .setView(view2)
-                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                        dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
-                                    })
-                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                        saveConstraintsButton.setVisibility(View.VISIBLE);
-                                        workDayOptionsLayout.setVisibility(View.VISIBLE);
-                                    })
-                                    .setNegativeButton(android.R.string.no,(dialog, which) -> {
-                                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
-                                    })
+                            alertDialog.show();
 
-                                    .show();
-                        } else {
+                            okButton.setOnClickListener(v -> {
+                                dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Work day", null));
+                                disableRadioGroup(dayTypeRadioGroup); // Lock selection
+                                saveConstraintsButton.setVisibility(View.VISIBLE);
+                                workDayOptionsLayout.setVisibility(View.VISIBLE);
+                                alertDialog.dismiss();
+                            });
+                        }
+
+                        else {
+                            dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Work day", null));
                             saveConstraintsButton.setVisibility(View.VISIBLE);
                             workDayOptionsLayout.setVisibility(View.VISIBLE);
+                            alertDialog.dismiss();
+                           disableRadioGroup(dayTypeRadioGroup);
+
                         }
                     }
 
+                    // Handle Day Off Selection
                     if (checkedId == R.id.dayOffRadioButton) {
                         if ("Sick day".equals(currentStatus) || "Work day".equals(currentStatus)) {
-                            alertTitle.setText("Day off Confirmation");
+                            alertTitle.setText("Day Off Confirmation");
                             alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
                             alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
-                            new AlertDialog.Builder(getContext())
-                                    .setView(view2)
-                                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                        dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
-                                    })
-                                    .setNegativeButton(android.R.string.no,(dialog, which) -> {
-                                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
-                                    })
-                                    .show();
+                            alertDialog.show();
+
+                            okButton.setOnClickListener(v -> {
+                                dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
+                                disableRadioGroup(dayTypeRadioGroup);
+                                alertDialog.dismiss();
+                            });
 
                         } else {
-                            Toast.makeText(getContext(), "It is already a day off ", Toast.LENGTH_LONG).show();
+                            if ("Day off".equals(currentStatus)) {
+                                alertDialog.dismiss();
+                                Toast.makeText(getContext(), "It is already a day off", Toast.LENGTH_LONG).show();
+                                enableRadioGroup(dayTypeRadioGroup);
+                            } else {
+                                alertDialog.dismiss();
+                            }
                         }
                     }
 
-                            if (checkedId == R.id.sickDayRadioButton) {
-                                if ("Day off".equals(currentStatus) || "Work day".equals(currentStatus)) {
-                                    alertTitle.setText("Sick day Confirmation");
-                                    alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
-                                    alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+                    // Handle Sick Day Selection
+                    if (checkedId == R.id.sickDayRadioButton) {
+                        if ("Day off".equals(currentStatus) || "Work day".equals(currentStatus)) {
+                            alertTitle.setText("Sick Day Confirmation");
+                            alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
+                            alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+                            alertDialog.show();
 
-                                    new AlertDialog.Builder(getContext())
-                                            .setView(view2)
-                                            .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                                                dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Sick day", null));
-                                            })
-                                            .setNegativeButton(android.R.string.no,(dialog, which) -> {
-                                                Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
-                                            })
-                                            .setIcon(android.R.drawable.ic_dialog_alert)
-                                            .show();
-                                }
-                                else {
-                                    Toast.makeText(getContext(), "It is already a sick day", Toast.LENGTH_LONG).show();
-                                }
-                            }
+                            okButton.setOnClickListener(v -> {
+                                dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Sick day", null));
+                                disableRadioGroup(dayTypeRadioGroup);
+                                alertDialog.dismiss();
+                            });
+
+                        } else {
+                            alertDialog.dismiss();
+                            Toast.makeText(getContext(), "It is already a sick day", Toast.LENGTH_LONG).show();
                         }
-                    });
+                    }
+                } else {
+                    if(checkedId == R.id.sickDayRadioButton)
+                    {
+                        dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Sick day", null));
+                        Toast.makeText(getContext(), "Sick day saved successfully!", Toast.LENGTH_SHORT).show();
+                        disableRadioGroup(dayTypeRadioGroup);
+                    }
+                    if(checkedId==R.id.workDayRadioButton){
+                        dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Work day", null));
+                        saveConstraintsButton.setVisibility(View.VISIBLE);
+                        workDayOptionsLayout.setVisibility(View.VISIBLE);
+                        Log.d("Firebase", "Work day open options");
+                        disableRadioGroup(dayTypeRadioGroup);
+
+
+                    }
+                    if(checkedId==R.id.dayOffRadioButton){
+                        dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
+                        Toast.makeText(getContext(),"Day off saved successfully!",Toast.LENGTH_SHORT).show();
+                        disableRadioGroup(dayTypeRadioGroup);
+
+                    }
+                }
+            });
         });
-
-
 
         // Initialize NumberPickers
         NumberPicker startHourPicker = view.findViewById(R.id.startHourPicker);
@@ -168,8 +203,6 @@ public class AdminConstraintsFragment extends Fragment {
         setupMinutePickerConstrains(constraintStartMinutePicker);
         setupHourPickerConstrains(constraintEndHourPicker);
         setupMinutePickerConstrains(constraintEndMinutePicker);
-
-
 
         saveConstraintsButton.setOnClickListener(v -> saveConstraints(
                 startHourPicker, startMinutePicker, endHourPicker, endMinutePicker,
@@ -201,14 +234,12 @@ public class AdminConstraintsFragment extends Fragment {
         minutePicker.setWrapSelectorWheel(true);
     }
 
-
     private void setupMinutePicker(NumberPicker minutePicker) {
         minutePicker.setMinValue(0);
         minutePicker.setMaxValue(1);
         minutePicker.setDisplayedValues(new String[]{"00", "30"}); // "None" option for null constraints
         minutePicker.setWrapSelectorWheel(true);
     }
-
 
     private void saveConstraints(NumberPicker startHourPicker, NumberPicker startMinutePicker,
                                  NumberPicker endHourPicker, NumberPicker endMinutePicker,
@@ -218,8 +249,6 @@ public class AdminConstraintsFragment extends Fragment {
                                  NumberPicker constraintEndHourPicker, NumberPicker constraintEndMinutePicker,
                                  TextView selectedDateTextView) {
         // Extract selected date
-
-
 
         // Get values from NumberPickers
         int startHour = startHourPicker.getValue();
@@ -338,7 +367,7 @@ public class AdminConstraintsFragment extends Fragment {
         }
 
         // Save appointments to Realtime Database
-        DateModel dateModel = new DateModel(selectedDate,"Work day" ,appointments);
+        DateModel dateModel = new DateModel(selectedDate, "Work day", appointments);
         dbRef.child(selectedDate).setValue(dateModel)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firebase", "Appointments saved for date: " + selectedDate);
@@ -360,23 +389,15 @@ public class AdminConstraintsFragment extends Fragment {
         return value + 6; // Convert picker value to actual hour (0 -> 6, 1 -> 7, etc.)
     }
 
-    public Task<Boolean> isWorkDay(String date) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("dates").child(date);
-
-        return databaseReference.get().continueWith(task -> {
-            if (!task.isSuccessful() || !task.getResult().exists())
-                return false;
-
-            // Extract `dateStatus` from Firebase
-            String status = task.getResult().child("dateStatus").getValue(String.class);
-            if ("Work day".equals(status)) {
-                Log.d("DEBUG", "Workday found for date: " + date);
-                return true;
-            }
-
-            Log.d("DEBUG", "Not a workday: " + date);
-            return false;
-        });
+    private void disableRadioGroup(RadioGroup group) {
+        for (int i = 0; i < group.getChildCount(); i++) {
+            group.getChildAt(i).setEnabled(false);
+        }
     }
 
+    private void enableRadioGroup(RadioGroup group) {
+        for (int i = 0; i < group.getChildCount(); i++) {
+            group.getChildAt(i).setEnabled(true);
+        }
+    }
 }
