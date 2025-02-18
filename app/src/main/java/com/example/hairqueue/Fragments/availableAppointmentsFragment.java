@@ -1,66 +1,86 @@
 package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+
+import com.example.hairqueue.Adapters.AppointmentListAdapter;
+import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.R;
+import com.example.hairqueue.Adapters.AppointmentAdapter;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link availableAppointmentsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class availableAppointmentsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public availableAppointmentsFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment availableAppointmentsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static availableAppointmentsFragment newInstance(String param1, String param2) {
-        availableAppointmentsFragment fragment = new availableAppointmentsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    private ListView availableAppointmentsListView;
+    private List<AppointmentModel> availableAppointments;
+    private AppointmentAdapter appointmentAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_available_appointments, container, false);
+        View view = inflater.inflate(R.layout.fragment_available_appointments, container, false);
+
+        // Initialize the ListView
+        availableAppointmentsListView = view.findViewById(R.id.availableAppointmentsListView);
+        if (availableAppointmentsListView == null) {
+            Toast.makeText(getContext(), "ListView not found", Toast.LENGTH_SHORT).show();
+            return view;
+        }
+
+        // Initialize the appointments list
+        availableAppointments = new ArrayList<>();
+
+        // Initialize AppointmentAdapter
+        appointmentAdapter = new AppointmentAdapter();
+
+        // Get the selected date from arguments
+        Bundle args = getArguments();
+        String selectedDate = args != null ? args.getString("selectedDate") : null;
+
+        if (selectedDate != null) {
+            loadAvailableAppointments(selectedDate);
+        } else {
+            Toast.makeText(getContext(), "No date selected.", Toast.LENGTH_SHORT).show();
+        }
+
+        return view;
+    }
+
+    private void loadAvailableAppointments(String date) {
+        appointmentAdapter.getAppointmentsByDate(date, task -> {
+            if (task.isSuccessful()) {
+                List<AppointmentModel> allAppointments = task.getResult();
+                if (allAppointments == null) {
+                    allAppointments = new ArrayList<>();
+                }
+
+                availableAppointments.clear();
+                for (AppointmentModel appointment : allAppointments) {
+                    if ("Available".equals(appointment.getStatus())) {
+                        availableAppointments.add(appointment);
+                    }
+                }
+
+                // Update ListView with the custom adapter
+                AppointmentListAdapter adapter = new AppointmentListAdapter(getContext(), availableAppointments);
+                availableAppointmentsListView.setAdapter(adapter);
+                if(availableAppointments.size() == 0) {
+                    Toast.makeText(getContext(), "No available appointments for " + date, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Loaded available appointments for " + date, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Error loading appointments.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
