@@ -1,66 +1,86 @@
 package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+
+import com.example.hairqueue.Adapters.AppointmentListAdapter;
+import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.R;
+import com.example.hairqueue.Adapters.AppointmentAdapter;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link occupiedAppointmentsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class occupiedAppointmentsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public occupiedAppointmentsFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment occupiedAppointmentsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static occupiedAppointmentsFragment newInstance(String param1, String param2) {
-        occupiedAppointmentsFragment fragment = new occupiedAppointmentsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    private ListView occupiedAppointmentsListView;
+    private List<AppointmentModel> occupiedAppointments;
+    private AppointmentAdapter appointmentAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_occupied_appointments, container, false);
+        View view = inflater.inflate(R.layout.fragment_occupied_appointments, container, false);
+
+        // Initialize the ListView
+        occupiedAppointmentsListView = view.findViewById(R.id.occupiedAppointmentsFragmentListView);
+        if (occupiedAppointmentsListView == null) {
+            Toast.makeText(getContext(), "ListView not found", Toast.LENGTH_SHORT).show();
+            return view;
+        }
+
+        // Initialize the appointments list
+        occupiedAppointments = new ArrayList<>();
+
+        // Initialize AppointmentAdapter
+        appointmentAdapter = new AppointmentAdapter();
+
+        // Get the selected date from arguments
+        Bundle args = getArguments();
+        String selectedDate = args != null ? args.getString("selectedDate") : null;
+
+        if (selectedDate != null) {
+            loadOccupiedAppointments(selectedDate);
+        } else {
+            Toast.makeText(getContext(), "No date selected.", Toast.LENGTH_SHORT).show();
+        }
+
+        return view;
+    }
+
+    private void loadOccupiedAppointments(String date) {
+        appointmentAdapter.getAppointmentsByDate(date, task -> {
+            if (task.isSuccessful()) {
+                List<AppointmentModel> allAppointments = task.getResult();
+                if (allAppointments == null) {
+                    allAppointments = new ArrayList<>();
+                }
+
+                occupiedAppointments.clear();
+                for (AppointmentModel appointment : allAppointments) {
+                    if (!"Available".equals(appointment.getStatus())) {
+                        occupiedAppointments.add(appointment);
+                    }
+                }
+
+                // Update ListView with the custom adapter
+                AppointmentListAdapter adapter = new AppointmentListAdapter(getContext(), occupiedAppointments);
+                occupiedAppointmentsListView.setAdapter(adapter);
+                if(occupiedAppointments.size() == 0) {
+                    Toast.makeText(getContext(), "No occupied appointments for " + date, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Loaded occupied appointments for " + date, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Error loading appointments.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

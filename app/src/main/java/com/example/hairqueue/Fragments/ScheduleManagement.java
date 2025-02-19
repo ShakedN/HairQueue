@@ -58,6 +58,7 @@ public class ScheduleManagement extends Fragment {
             btnShowAvailableAppointments.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("selectedDate", selectedDate);
+
                 Navigation.findNavController(v).navigate(R.id.action_scheduleManagement_to_availableAppointmentsFragment, bundle);
             });
 
