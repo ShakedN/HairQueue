@@ -10,6 +10,8 @@ public class AppointmentModel {
     String endTime;
     int duration;
 
+    public AppointmentModel() {
+    }
     public AppointmentModel(String appointmentId, String email, String date, String service, String status, String startTime, String endTime, int duration) {
         this.appointmentId = appointmentId;
         this.email = email;

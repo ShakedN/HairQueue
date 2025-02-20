@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_beige"
-    tools:context=".Fragments.ClientHomeFragment"
-    android:fontFamily="@font/roboto">
+    tools:context=".Fragments.ClientHomeFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -37,8 +36,7 @@
             android:text="Hello, User!"
             android:textColor="@color/primary"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/roboto" />
+            android:textStyle="bold" />
 
         <!-- Divider line -->
         <View
@@ -56,8 +54,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/primary"
-            android:paddingBottom="8dp"
-            android:fontFamily="@font/roboto"/>
+            android:paddingBottom="8dp" />
 
 
         <!-- Services List -->
@@ -88,15 +85,13 @@
                     android:textColor="@color/primary"
                     android:textSize="16sp"
                     android:paddingTop="8dp"
-                    android:paddingStart="8dp"
-                    android:fontFamily="@font/roboto"/>
+                    android:paddingStart="8dp" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="60₪"
                     android:textColor="@color/secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/roboto"/>
+                    android:textSize="14sp" />
 
             </LinearLayout>
 
@@ -200,7 +195,7 @@
             android:textStyle="bold"
             android:textColor="@color/primary"
             android:paddingTop="16dp"
-            android:paddingBottom="4dp"/>
+            android:paddingBottom="4dp" />
 
         <!-- RecyclerView for available appointments -->
         <androidx.recyclerview.widget.RecyclerView
@@ -217,7 +212,7 @@
             android:id="@+id/btnBookAppointment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Book Now"
+            android:text="Book Now!"
             android:textSize="16sp"
             android:textColor="@android:color/white"
             android:backgroundTint="@color/primary"
@@ -225,8 +220,7 @@
             android:layout_marginTop="16dp"
             android:paddingHorizontal="24dp"
             android:paddingVertical="12dp"
-
             android:elevation="6dp"/>
 
     </LinearLayout>
-</FrameLayout>
+</ScrollView>
