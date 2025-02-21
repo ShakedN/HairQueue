@@ -1,74 +1,96 @@
 package com.example.hairqueue.Adapters;
 
 import com.example.hairqueue.Models.AppointmentModel;
+import com.example.hairqueue.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import android.content.Context;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppointmentAdapter {
+public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.ViewHolder> {
     private List<AppointmentModel> appointments;
+    private Context context;
     private DatabaseReference dbRef;
 
-    public AppointmentAdapter() {
-        this.appointments = new ArrayList<>();
+    public AppointmentAdapter(Context context, List<AppointmentModel> appointments) {
+        this.context = context;
+        this.appointments = appointments;
         // Initialize Firebase Realtime Database
         dbRef = FirebaseDatabase.getInstance().getReference("dates");
     }
 
-    // Add an appointment to Firebase
-    public void addAppointment(String date, AppointmentModel appointment) {
-        dbRef.child(date).child("appointments").child(appointment.getAppointmentId())
-                .setValue(appointment)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("AppointmentAdapter", "Appointment successfully added to Firebase!");
-                    appointments.add(appointment); // Add to local list
-                })
-                .addOnFailureListener(e -> Log.w("AppointmentAdapter", "Error adding appointment", e));
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.appointment_item, parent, false);
+        return new ViewHolder(view);
     }
 
-    // Remove an appointment from Firebase
-    public void removeAppointment(String date, String appointmentId) {
-        dbRef.child(date).child("appointments").child(appointmentId)
-                .removeValue()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("AppointmentAdapter", "Appointment successfully deleted from Firebase!");
-                    // Remove from local list as well
-                    for (int i = 0; i < appointments.size(); i++) {
-                        if (appointments.get(i).getAppointmentId().equals(appointmentId)) {
-                            appointments.remove(i);
-                            break;
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> Log.w("AppointmentAdapter", "Error deleting appointment", e));
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        AppointmentModel appointment = appointments.get(position);
+
+        holder.tvService.setText("Haircut"); // אם יש שירותים שונים, אפשר לשנות בהתאם
+        holder.tvDate.setText("Date: " + appointment.getDate());
+        holder.tvStartTime.setText("Start: " + appointment.getStartTime());
+        holder.tvEndTime.setText("End: " + appointment.getEndTime());
+        holder.tvDuration.setText("Duration: " + appointment.getDuration() + " mins");
+        holder.tvStatus.setText("Status: " + appointment.getStatus());
+
+        if ("Available".equals(appointment.getStatus())) {
+            holder.tvStatus.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark));
+        } else {
+            holder.tvStatus.setTextColor(ContextCompat.getColor(context,android.R.color.holo_red_dark ));
+        }
+
+        holder.tvAppointmentId.setText(appointment.getAppointmentId());
+        holder.tvEmail.setText("email@example.com"); // אם יש לך אימייל רלוונטי
     }
 
-    // Change the status of an appointment in Firebase
-    public void changeStatus(String date, String appointmentId, String newStatus) {
-        dbRef.child(date).child("appointments").child(appointmentId)
-                .child("status").setValue(newStatus)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("AppointmentAdapter", "Appointment status successfully updated in Firebase!");
-                    // Update status in local list as well
-                    for (AppointmentModel appointment : appointments) {
-                        if (appointment.getAppointmentId().equals(appointmentId)) {
-                            appointment.setStatus(newStatus);
-                            break;
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> Log.w("AppointmentAdapter", "Error updating appointment status", e));
+    @Override
+    public int getItemCount() {
+        return appointments.size();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvService, tvDate, tvStartTime, tvEndTime, tvDuration, tvStatus, tvAppointmentId, tvEmail;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvService = itemView.findViewById(R.id.tvService);
+            tvDate = itemView.findViewById(R.id.tvDate);
+            tvStartTime = itemView.findViewById(R.id.tvStartTime);
+            tvEndTime = itemView.findViewById(R.id.tvEndTime);
+            tvDuration = itemView.findViewById(R.id.tvDuration);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvAppointmentId = itemView.findViewById(R.id.tvAppointmentId);
+            tvEmail = itemView.findViewById(R.id.tvEmail);
+        }
+    }
+
+    public void updateAppointments(List<AppointmentModel> newAppointments) {
+        this.appointments.clear();
+        this.appointments.addAll(newAppointments);
+        notifyDataSetChanged();
     }
 
     // Get all appointments for a specific date from Firebase
@@ -94,9 +116,6 @@ public class AppointmentAdapter {
                 });
     }
 
-    public void notifyDataSetChanged() {
-        // Implement this method to notify the adapter of data changes
-    }
     public void getAllAppointments(final OnCompleteListener<List<AppointmentModel>> listener) {
         List<AppointmentModel> allAppointments = new ArrayList<>();
         dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
