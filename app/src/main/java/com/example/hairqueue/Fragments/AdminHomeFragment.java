@@ -23,7 +23,6 @@ import java.util.List;
 public class AdminHomeFragment extends Fragment {
 
     private RecyclerView appointmentsRecyclerView;
-    private Button loadAppointmentsButton;
     private List<AppointmentModel> appointments;
     private AppointmentAdapter appointmentAdapter;
     private Button buttonScheduleManagement;
@@ -36,7 +35,6 @@ public class AdminHomeFragment extends Fragment {
 
         // Initialize the RecyclerView and Button
         appointmentsRecyclerView = view.findViewById(R.id.availableAppointmentsRecyclerView);
-        loadAppointmentsButton = view.findViewById(R.id.loadAppointmentsButton);
         buttonScheduleManagement = view.findViewById(R.id.buttonSchedule);
 
         // Initialize the appointments list
@@ -48,7 +46,7 @@ public class AdminHomeFragment extends Fragment {
         appointmentsRecyclerView.setAdapter(appointmentAdapter);
 
         // Handle button click to load appointments
-        loadAppointmentsButton.setOnClickListener(v -> loadAppointments());
+        loadAppointments();
         buttonScheduleManagement.setOnClickListener(v -> {
             // Navigate to Schedule Management
             Navigation.findNavController(v).navigate(R.id.action_adminHomeFragment_to_scheduleManagement);
@@ -58,10 +56,11 @@ public class AdminHomeFragment extends Fragment {
     }
 
     private void loadAppointments() {
-        // Get current time
+        // Get current date and time
         Calendar now = Calendar.getInstance();
+        long currentTimeMillis = now.getTimeInMillis();
 
-        // Fetch all appointments
+        // Fetch all appointments from Firebase
         appointmentAdapter.getAllAppointments(task -> {
             if (task.isSuccessful()) {
                 List<AppointmentModel> allAppointments = task.getResult();
@@ -69,26 +68,61 @@ public class AdminHomeFragment extends Fragment {
                     allAppointments = new ArrayList<>();
                 }
 
-                // Sort appointments by closest to current time
-                allAppointments.sort((a1, a2) -> {
+                // Filter out past appointments
+                List<AppointmentModel> upcomingAppointments = new ArrayList<>();
+                for (AppointmentModel appointment : allAppointments) {
                     try {
-                        Calendar dateTime1 = Calendar.getInstance();
-                        Calendar dateTime2 = Calendar.getInstance();
+                        // Parse appointment date and time
+                        Calendar appointmentTime = Calendar.getInstance();
+                        String[] dateParts = appointment.getDate().split("-"); // YYYY-MM-DD
+                        String[] timeParts = appointment.getStartTime().split(":"); // HH:MM
+
+                        appointmentTime.set(
+                                Integer.parseInt(dateParts[0]),
+                                Integer.parseInt(dateParts[1]) - 1,
+                                Integer.parseInt(dateParts[2]),
+                                Integer.parseInt(timeParts[0]),
+                                Integer.parseInt(timeParts[1])
+                        );
+
+                        // Add only future appointments
+                        if (appointmentTime.getTimeInMillis() >= currentTimeMillis) {
+                            upcomingAppointments.add(appointment);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // Sort upcoming appointments by date & time (nearest first)
+                upcomingAppointments.sort((a1, a2) -> {
+                    try {
+                        Calendar time1 = Calendar.getInstance();
+                        Calendar time2 = Calendar.getInstance();
 
                         String[] date1Parts = a1.getDate().split("-");
                         String[] time1Parts = a1.getStartTime().split(":");
                         String[] date2Parts = a2.getDate().split("-");
                         String[] time2Parts = a2.getStartTime().split(":");
 
-                        dateTime1.set(Integer.parseInt(date1Parts[0]), Integer.parseInt(date1Parts[1]) - 1, Integer.parseInt(date1Parts[2]),
-                                Integer.parseInt(time1Parts[0]), Integer.parseInt(time1Parts[1]));
+                        time1.set(
+                                Integer.parseInt(date1Parts[0]),
+                                Integer.parseInt(date1Parts[1]) - 1,
+                                Integer.parseInt(date1Parts[2]),
+                                Integer.parseInt(time1Parts[0]),
+                                Integer.parseInt(time1Parts[1])
+                        );
 
-                        dateTime2.set(Integer.parseInt(date2Parts[0]), Integer.parseInt(date2Parts[1]) - 1, Integer.parseInt(date2Parts[2]),
-                                Integer.parseInt(time2Parts[0]), Integer.parseInt(time2Parts[1]));
+                        time2.set(
+                                Integer.parseInt(date2Parts[0]),
+                                Integer.parseInt(date2Parts[1]) - 1,
+                                Integer.parseInt(date2Parts[2]),
+                                Integer.parseInt(time2Parts[0]),
+                                Integer.parseInt(time2Parts[1])
+                        );
 
-                        // Compare dates and times
-                        return Long.compare(Math.abs(dateTime1.getTimeInMillis() - now.getTimeInMillis()),
-                                Math.abs(dateTime2.getTimeInMillis() - now.getTimeInMillis()));
+                        return Long.compare(time1.getTimeInMillis(), time2.getTimeInMillis());
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -96,11 +130,11 @@ public class AdminHomeFragment extends Fragment {
                     }
                 });
 
-                // Take only the closest 5 appointments
+                // Take only the nearest 5 appointments
                 appointments.clear();
-                appointments.addAll(allAppointments.subList(0, Math.min(5, allAppointments.size())));
+                appointments.addAll(upcomingAppointments.subList(0, Math.min(5, upcomingAppointments.size())));
 
-                // Notify adapter of data changes
+                // Notify the adapter to update UI
                 appointmentAdapter.notifyDataSetChanged();
 
                 Toast.makeText(getContext(), "Loaded 5 closest appointments.", Toast.LENGTH_SHORT).show();

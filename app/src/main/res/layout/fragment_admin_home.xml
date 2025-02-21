@@ -3,39 +3,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="20dp"
     android:gravity="center"
     android:background="@color/background_beige"
     tools:context=".Fragments.AdminHomeFragment">
 
-    <!-- 🌟 App Logo -->
+    <!-- 🌟 App Logo (Centered) -->
     <ImageView
         android:id="@+id/appLogo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:src="@drawable/logo"
         android:layout_gravity="center"
         android:contentDescription="App Logo"
-        android:layout_marginBottom="16dp" />
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="12dp" />
 
-    <!-- 🏥 Load Appointments Button -->
-
-
-    <!-- 📌 Empty state message for ListView -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/loadAppointmentsButton"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="345dp"
+    <!-- 📌 Title for Appointments List -->
+    <TextView
+        android:id="@+id/titleAppointments"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/upcoming_appointments"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
         android:layout_gravity="center"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="@color/primary"
-        android:padding="12dp"
-        android:text="Load the nearest 5 upcoming appointments"
-        android:textAllCaps="false"
-        android:textColor="@android:color/white" />
+        android:layout_marginBottom="8dp"/>
 
+    <!-- 🚫 No Appointments Found Message -->
     <TextView
         android:id="@+id/emptyView"
         android:layout_width="match_parent"
@@ -48,29 +46,36 @@
         android:padding="8dp"
         android:visibility="gone" />
 
-    <!-- 🗂 List of Appointments -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/availableAppointmentsRecyclerView"
+    <!-- 🗂 RecyclerView Styled as a Card -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
-        android:background="@android:color/white"
-        android:elevation="4dp"
-        android:clipToPadding="false"
-        android:scrollbars="vertical" />
+        android:layout_margin="8dp"
+        app:cardElevation="6dp"
+        app:cardCornerRadius="12dp"
+        android:background="@android:color/white">
 
-    <!-- 📅 Schedule Management Button -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/availableAppointmentsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="12dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"/>
+    </androidx.cardview.widget.CardView>
+
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSchedule"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Schedule Management"
+        android:text="Manage Schedule"
         android:textAllCaps="false"
         android:padding="12dp"
         android:backgroundTint="@color/secondary"
         android:textColor="@android:color/white"
+        app:cornerRadius="12dp"
         android:layout_marginTop="16dp" />
-
 </LinearLayout>
