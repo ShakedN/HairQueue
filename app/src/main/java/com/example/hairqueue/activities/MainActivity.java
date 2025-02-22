@@ -45,7 +45,10 @@ public class MainActivity extends AppCompatActivity {
 
         String email = ((EditText)findViewById(R.id.inputUserName)).getText().toString();
         String password = ((EditText)findViewById(R.id.inputPass)).getText().toString();
-
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(MainActivity.this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
+            return;
+        }
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -64,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                             else{
                                 Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_LONG).show();
-                                view.post(() -> Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_clientHomeFragment));
+                                 Navigation.findNavController(view).navigate(R.id.action_loginFragment_to_clientHomeFragment);
+
                             }
                         }
 
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+
 
 
 

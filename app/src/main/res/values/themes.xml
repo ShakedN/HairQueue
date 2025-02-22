@@ -3,8 +3,8 @@
     <style name="Base.Theme.HairQueue" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>,
+        <item name="android:fontFamily">@font/roboto</item>
+    </style>
 
     <style name="Theme.HairQueue" parent="Base.Theme.HairQueue" />
-
 </resources>

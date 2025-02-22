@@ -10,11 +10,8 @@ public class AppointmentModel {
     String endTime;
     int duration;
 
-    // No-argument constructor
     public AppointmentModel() {
     }
-
-    // Parameterized constructor
     public AppointmentModel(String appointmentId, String email, String date, String service, String status, String startTime, String endTime, int duration) {
         this.appointmentId = appointmentId;
         this.email = email;
@@ -25,8 +22,6 @@ public class AppointmentModel {
         this.endTime = endTime;
         this.duration = duration;
     }
-
-    // Getters and setters
     public String getAppointmentId() {
         return appointmentId;
     }
@@ -90,4 +85,8 @@ public class AppointmentModel {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
+
+
+
 }

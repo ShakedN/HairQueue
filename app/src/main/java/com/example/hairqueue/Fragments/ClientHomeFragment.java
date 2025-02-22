@@ -1,66 +1,135 @@
 package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
-
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.example.hairqueue.Adapters.AppointmentAdapter;
+import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ClientHomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 public class ClientHomeFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private FirebaseAuth mAuth;
+    private TextView greetingTextView;
+    private RecyclerView recyclerView;
+    private AppointmentAdapter appointmentAdapter;
+    private List<AppointmentModel> appointmentList = new ArrayList<>();
+    private DatabaseReference dbRef;
+    private Button buttonBook;
 
     public ClientHomeFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ClientHomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ClientHomeFragment newInstance(String param1, String param2) {
-        ClientHomeFragment fragment = new ClientHomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_client_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_client_home, container, false);
+        buttonBook = view.findViewById(R.id.btnBookAppointment);
+        greetingTextView = view.findViewById(R.id.greetingTextView);
+        recyclerView = view.findViewById(R.id.rvAvailableAppointments);
+        appointmentAdapter = new AppointmentAdapter(getContext(),appointmentList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(appointmentAdapter);
+
+        mAuth = FirebaseAuth.getInstance();
+        dbRef = FirebaseDatabase.getInstance().getReference("dates");
+
+
+        buttonBook.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Handle the button click event here
+                Toast.makeText(getContext(), "Book Appointment", Toast.LENGTH_SHORT).show();
+                Navigation.findNavController(view).navigate(R.id.action_clientHomeFragment_to_clientDatePickerFragment);
+            }
+        });
+        getUserName();
+        loadClosestAvailableAppointments();
+
+        return view;
     }
+
+    private void getUserName() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            String email = user.getEmail();
+            DatabaseReference usersRef = dbRef.child("users");
+            usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        String fullName = userSnapshot.child("fullName").getValue(String.class);
+                        String userEmail = userSnapshot.child("email").getValue(String.class);
+                        if (email != null && email.equals(userEmail)) {
+                            greetingTextView.setText("Hello, " + fullName);
+                            break;
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.w("Database Error", "Failed to read user data.", error.toException());
+                }
+            });
+        }
+    }
+
+ private void loadClosestAvailableAppointments() {
+     dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+         @Override
+         public void onDataChange(DataSnapshot dataSnapshot) {
+             appointmentList.clear();
+             String currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+             for (DataSnapshot dateSnapshot : dataSnapshot.getChildren()) {
+                 String date = dateSnapshot.getKey();
+                 if (date != null && date.compareTo(currentDate) >= 0) {
+                     for (DataSnapshot appointmentSnapshot : dateSnapshot.child("appointments").getChildren()) {
+                         AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
+                         if (appointment != null && appointmentList.size() < 3) {
+                             appointmentList.add(appointment);
+                         }
+                     }
+                 }
+                 if (appointmentList.size() >= 3) {
+                     break;
+                 }
+             }
+             appointmentAdapter.notifyDataSetChanged();
+         }
+
+         @Override
+         public void onCancelled(DatabaseError databaseError) {
+             Log.w("TAG", "Failed to read value.", databaseError.toException());
+         }
+     });
+ }
 }
