@@ -50,7 +50,7 @@ public class AdminHomeFragment extends Fragment {
         appointments = new ArrayList<>();
 
         // Initialize AppointmentAdapter
-        appointmentAdapter = new AppointmentAdapter(); // No context needed for this implementation
+       // appointmentAdapter = new AppointmentAdapter(); // No context needed for this implementation
 
         // Set the empty view for the ListView
         TextView emptyView = view.findViewById(android.R.id.empty); // Reference the empty state message

@@ -40,7 +40,7 @@ public class availableAppointmentsFragment extends Fragment {
         availableAppointments = new ArrayList<>();
 
         // Initialize AppointmentAdapter
-        appointmentAdapter = new AppointmentAdapter();
+       // appointmentAdapter = new AppointmentAdapter();
 
         // Get the selected date from arguments
         Bundle args = getArguments();

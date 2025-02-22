@@ -31,14 +31,11 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     private Context context;
     private DatabaseReference dbRef;
 
-    public AppointmentAdapter() {
-        this.appointments = new ArrayList<>();
-        // Initialize Firebase Realtime Database
-        dbRef = FirebaseDatabase.getInstance().getReference("dates");
-    }
     public AppointmentAdapter(Context context, List<AppointmentModel> appointments) {
         this.context = context;
         this.appointments = appointments;
+        // Initialize Firebase Realtime Database
+        dbRef = FirebaseDatabase.getInstance().getReference("dates");
     }
 
     @NonNull
@@ -67,8 +64,6 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
         holder.tvAppointmentId.setText(appointment.getAppointmentId());
         holder.tvEmail.setText("email@example.com"); // אם יש לך אימייל רלוונטי
-
-
     }
 
     @Override
@@ -91,6 +86,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             tvEmail = itemView.findViewById(R.id.tvEmail);
         }
     }
+
     public void updateAppointments(List<AppointmentModel> newAppointments) {
         this.appointments.clear();
         this.appointments.addAll(newAppointments);
@@ -143,4 +139,3 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         });
     }
 }
-
