@@ -3,6 +3,7 @@ package com.example.hairqueue.Fragments;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -66,10 +67,7 @@ public class ClientHomeFragment extends Fragment {
             public void onClick(View v) {
                 // Handle the button click event here
                 Toast.makeText(getContext(), "Book Appointment", Toast.LENGTH_SHORT).show();
-
-
-
-                //להוסיף קישור לדף קביעת התורים
+                Navigation.findNavController(view).navigate(R.id.action_clientHomeFragment_to_clientDatePickerFragment);
             }
         });
         getUserName();

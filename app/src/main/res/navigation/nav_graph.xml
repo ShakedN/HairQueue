@@ -42,7 +42,11 @@
         android:id="@+id/clientHomeFragment"
         android:name="com.example.hairqueue.Fragments.ClientHomeFragment"
         android:label="fragment_client_home"
-        tools:layout="@layout/fragment_client_home" />
+        tools:layout="@layout/fragment_client_home" >
+        <action
+            android:id="@+id/action_clientHomeFragment_to_clientDatePickerFragment"
+            app:destination="@id/clientDatePickerFragment" />
+    </fragment>
     <fragment
         android:id="@+id/scheduleManagement"
         android:name="com.example.hairqueue.Fragments.ScheduleManagement"
@@ -77,4 +81,18 @@
         android:name="com.example.hairqueue.Fragments.occupiedAppointmentsFragment"
         android:label="fragment_occupied_appointments"
         tools:layout="@layout/fragment_occupied_appointments" />
+    <fragment
+        android:id="@+id/clientDatePickerFragment"
+        android:name="com.example.hairqueue.Fragments.ClientDatePickerFragment"
+        android:label="fragment_client_date_picker"
+        tools:layout="@layout/fragment_client_date_picker" >
+        <action
+            android:id="@+id/action_clientDatePickerFragment_to_clientSetAppointmentFragment"
+            app:destination="@id/clientSetAppointmentFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/clientSetAppointmentFragment"
+        android:name="com.example.hairqueue.Fragments.ClientSetAppointmentFragment"
+        android:label="fragment_client_set_appointment2"
+        tools:layout="@layout/fragment_client_set_appointment" />
 </navigation>

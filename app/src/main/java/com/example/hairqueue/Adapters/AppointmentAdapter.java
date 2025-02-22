@@ -120,6 +120,33 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 });
     }
 
+    public void getAvailableAppointmentsByDate(String date, final OnCompleteListener<List<AppointmentModel>> listener) {
+        List<AppointmentModel> dateAppointments = new ArrayList<>();
+        dbRef.child(date).child("appointments")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot appointmentSnapshot : snapshot.getChildren()) {
+                            AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
+
+                            // Check if the appointment status is "Available"
+                            if (appointment != null && "Available".equals(appointment.getStatus())) {
+                                dateAppointments.add(appointment);  // Add only available appointments
+                            }
+                        }
+                        listener.onComplete(Tasks.forResult(dateAppointments));
+                        Log.d("AppointmentAdapter", "Available appointments for the date successfully fetched from Firebase!");
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        listener.onComplete(Tasks.forException(error.toException()));
+                        Log.w("AppointmentAdapter", "Error getting available appointments for the date.", error.toException());
+                    }
+                });
+    }
+
+
     public void getAllAppointments(final OnCompleteListener<List<AppointmentModel>> listener) {
         List<AppointmentModel> allAppointments = new ArrayList<>();
         dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
