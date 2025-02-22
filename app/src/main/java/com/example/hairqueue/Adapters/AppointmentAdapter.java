@@ -31,11 +31,14 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     private Context context;
     private DatabaseReference dbRef;
 
+    public AppointmentAdapter() {
+        this.appointments = new ArrayList<>();
+        // Initialize Firebase Realtime Database
+        dbRef = FirebaseDatabase.getInstance().getReference("dates");
+    }
     public AppointmentAdapter(Context context, List<AppointmentModel> appointments) {
         this.context = context;
         this.appointments = appointments;
-        // Initialize Firebase Realtime Database
-        dbRef = FirebaseDatabase.getInstance().getReference("dates");
     }
 
     @NonNull
@@ -64,6 +67,8 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
         holder.tvAppointmentId.setText(appointment.getAppointmentId());
         holder.tvEmail.setText("email@example.com"); // אם יש לך אימייל רלוונטי
+
+
     }
 
     @Override
@@ -86,7 +91,6 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             tvEmail = itemView.findViewById(R.id.tvEmail);
         }
     }
-
     public void updateAppointments(List<AppointmentModel> newAppointments) {
         this.appointments.clear();
         this.appointments.addAll(newAppointments);
@@ -115,6 +119,33 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                     }
                 });
     }
+
+    public void getAvailableAppointmentsByDate(String date, final OnCompleteListener<List<AppointmentModel>> listener) {
+        List<AppointmentModel> dateAppointments = new ArrayList<>();
+        dbRef.child(date).child("appointments")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot appointmentSnapshot : snapshot.getChildren()) {
+                            AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
+
+                            // Check if the appointment status is "Available"
+                            if (appointment != null && "Available".equals(appointment.getStatus())) {
+                                dateAppointments.add(appointment);  // Add only available appointments
+                            }
+                        }
+                        listener.onComplete(Tasks.forResult(dateAppointments));
+                        Log.d("AppointmentAdapter", "Available appointments for the date successfully fetched from Firebase!");
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        listener.onComplete(Tasks.forException(error.toException()));
+                        Log.w("AppointmentAdapter", "Error getting available appointments for the date.", error.toException());
+                    }
+                });
+    }
+
 
     public void getAllAppointments(final OnCompleteListener<List<AppointmentModel>> listener) {
         List<AppointmentModel> allAppointments = new ArrayList<>();
