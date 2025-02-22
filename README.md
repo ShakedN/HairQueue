@@ -1,6 +1,3 @@
-Below is an updated **README** with icons/emojis that make it more visually appealing. Feel free to adjust any icon choices to best suit your application’s style.
-
----
 
 # ✂️ HairQueue
 
