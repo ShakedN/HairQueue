@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         String phone = ((EditText) findViewById(R.id.phone)).getText().toString();
         String email = ((EditText) findViewById(R.id.email)).getText().toString();
         String full_name= ((EditText)findViewById(R.id.full_name)).getText().toString();
+        String username;
         // Get instance of Firebase Database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -119,9 +120,10 @@ public class MainActivity extends AppCompatActivity {
             String uid = currentUser.getUid();  // Use UID if needed for other purposes but not as the key for the phone
 
             // Reference to the user's data in the database, using phone as the key
-            DatabaseReference userRef = database.getReference("users").child(full_name);  // Save by phone number
+            username=email.split("@")[0];
+            DatabaseReference userRef = database.getReference("users").child(username);  // Save by phone number
 
-            // Create a User object with the email and phone number
+            // Create a User object with the email and phone numberl
             UserModel user = new UserModel(email, phone,full_name);
 
             // Store the user data under the phone number key

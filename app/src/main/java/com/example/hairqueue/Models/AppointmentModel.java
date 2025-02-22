@@ -8,11 +8,16 @@ public class AppointmentModel {
     String status;
     String startTime;
     String endTime;
+
+
+
+    String address;
     int duration;
 
     public AppointmentModel() {
     }
-    public AppointmentModel(String appointmentId, String email, String date, String service, String status, String startTime, String endTime, int duration) {
+    public AppointmentModel(String appointmentId, String email, String date, String service, String status, String startTime, String endTime, int duration, String
+                            address) {
         this.appointmentId = appointmentId;
         this.email = email;
         this.date = date;
@@ -21,6 +26,7 @@ public class AppointmentModel {
         this.startTime = startTime;
         this.endTime = endTime;
         this.duration = duration;
+        this.address = address;
     }
     public String getAppointmentId() {
         return appointmentId;
@@ -85,7 +91,13 @@ public class AppointmentModel {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+    public String getAddress() {
+        return address;
+    }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
 
 

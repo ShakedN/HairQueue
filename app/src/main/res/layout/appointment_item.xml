@@ -53,6 +53,27 @@
                 android:textColor="@android:color/black"/>
         </LinearLayout>
 
+        <!-- 🏠 Address Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_location"
+            android:layout_marginEnd="6dp"/>
+
+            <TextView
+                android:id="@+id/tvAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Address: 1234 Main St, City"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+
         <!-- 🔹 Separator Line -->
         <View
             android:layout_width="match_parent"

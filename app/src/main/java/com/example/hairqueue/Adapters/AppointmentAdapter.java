@@ -8,7 +8,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import android.content.Context;
@@ -31,14 +30,15 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     private Context context;
     private DatabaseReference dbRef;
 
-    public AppointmentAdapter() {
-        this.appointments = new ArrayList<>();
-        // Initialize Firebase Realtime Database
-        dbRef = FirebaseDatabase.getInstance().getReference("dates");
-    }
     public AppointmentAdapter(Context context, List<AppointmentModel> appointments) {
         this.context = context;
         this.appointments = appointments;
+        // Initialize Firebase Realtime Database
+        dbRef = FirebaseDatabase.getInstance().getReference("dates");
+    }
+
+    public AppointmentAdapter() {
+        dbRef = FirebaseDatabase.getInstance().getReference("dates");
     }
 
     @NonNull
@@ -52,23 +52,22 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         AppointmentModel appointment = appointments.get(position);
 
-        holder.tvService.setText("Haircut"); // אם יש שירותים שונים, אפשר לשנות בהתאם
+        holder.tvService.setText("Haircut");
         holder.tvDate.setText("Date: " + appointment.getDate());
         holder.tvStartTime.setText("Start: " + appointment.getStartTime());
         holder.tvEndTime.setText("End: " + appointment.getEndTime());
         holder.tvDuration.setText("Duration: " + appointment.getDuration() + " mins");
         holder.tvStatus.setText("Status: " + appointment.getStatus());
+        holder.address.setText("Address: " + appointment.getAddress());
 
         if ("Available".equals(appointment.getStatus())) {
             holder.tvStatus.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark));
         } else {
-            holder.tvStatus.setTextColor(ContextCompat.getColor(context,android.R.color.holo_red_dark ));
+            holder.tvStatus.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark));
         }
 
         holder.tvAppointmentId.setText(appointment.getAppointmentId());
-        holder.tvEmail.setText("email@example.com"); // אם יש לך אימייל רלוונטי
-
-
+        holder.tvEmail.setText("email@example.com");
     }
 
     @Override
@@ -77,7 +76,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvService, tvDate, tvStartTime, tvEndTime, tvDuration, tvStatus, tvAppointmentId, tvEmail;
+        TextView tvService, tvDate, tvStartTime, tvEndTime, tvDuration, tvStatus, tvAppointmentId, tvEmail, address;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -89,15 +88,16 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvAppointmentId = itemView.findViewById(R.id.tvAppointmentId);
             tvEmail = itemView.findViewById(R.id.tvEmail);
+            address=itemView.findViewById(R.id.tvAddress);
         }
     }
+
     public void updateAppointments(List<AppointmentModel> newAppointments) {
         this.appointments.clear();
         this.appointments.addAll(newAppointments);
         notifyDataSetChanged();
     }
 
-    // Get all appointments for a specific date from Firebase
     public void getAppointmentsByDate(String date, final OnCompleteListener<List<AppointmentModel>> listener) {
         List<AppointmentModel> dateAppointments = new ArrayList<>();
         dbRef.child(date).child("appointments")
@@ -129,9 +129,8 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                         for (DataSnapshot appointmentSnapshot : snapshot.getChildren()) {
                             AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
 
-                            // Check if the appointment status is "Available"
                             if (appointment != null && "Available".equals(appointment.getStatus())) {
-                                dateAppointments.add(appointment);  // Add only available appointments
+                                dateAppointments.add(appointment);
                             }
                         }
                         listener.onComplete(Tasks.forResult(dateAppointments));
@@ -145,7 +144,6 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                     }
                 });
     }
-
 
     public void getAllAppointments(final OnCompleteListener<List<AppointmentModel>> listener) {
         List<AppointmentModel> allAppointments = new ArrayList<>();
