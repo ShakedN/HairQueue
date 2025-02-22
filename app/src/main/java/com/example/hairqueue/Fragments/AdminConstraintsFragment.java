@@ -349,9 +349,9 @@ public class AdminConstraintsFragment extends Fragment {
             // Create appointment
             AppointmentModel appointment = new AppointmentModel(
                     UUID.randomUUID().toString(),
-                    null,
+                    "",
                     selectedDate,
-                    null,
+                    "",
                     "Available",
                     startTime,
                     endTime,
