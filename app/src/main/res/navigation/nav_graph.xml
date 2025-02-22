@@ -42,7 +42,14 @@
         android:id="@+id/clientHomeFragment"
         android:name="com.example.hairqueue.Fragments.ClientHomeFragment"
         android:label="fragment_client_home"
-        tools:layout="@layout/fragment_client_home" />
+        tools:layout="@layout/fragment_client_home" >
+        <action
+            android:id="@+id/action_clientHomeFragment_to_activityProfileFragment"
+            app:destination="@id/activityProfileFragment" />
+        <action
+            android:id="@+id/action_clientHomeFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
     <fragment
         android:id="@+id/scheduleManagement"
         android:name="com.example.hairqueue.Fragments.ScheduleManagement"
@@ -52,11 +59,11 @@
             android:id="@+id/action_scheduleManagement_to_adminFragmentConstraints"
             app:destination="@id/adminFragmentConstraints" />
         <action
+            android:id="@+id/action_scheduleManagement_to_availableAppointmentsFragment"
+            app:destination="@id/availableAppointmentsFragment" />
+        <action
             android:id="@+id/action_scheduleManagement_to_occupiedAppointmentsFragment"
             app:destination="@id/occupiedAppointmentsFragment" />
-        <action
-            android:id="@+id/action_scheduleManagement_to_availableAppointmentsFragment"
-            app:destination="@id/availableAppointmentsFragment2" />
     </fragment>
     <fragment
         android:id="@+id/adminFragmentConstraints"
@@ -68,13 +75,22 @@
             app:destination="@id/adminHomeFragment" />
     </fragment>
     <fragment
+        android:id="@+id/availableAppointmentsFragment"
+        android:name="com.example.hairqueue.Fragments.availableAppointmentsFragment"
+        android:label="fragment_available_appointments"
+        tools:layout="@layout/fragment_available_appointments" />
+    <fragment
         android:id="@+id/occupiedAppointmentsFragment"
         android:name="com.example.hairqueue.Fragments.occupiedAppointmentsFragment"
         android:label="fragment_occupied_appointments"
         tools:layout="@layout/fragment_occupied_appointments" />
     <fragment
-        android:id="@+id/availableAppointmentsFragment2"
-        android:name="com.example.hairqueue.Fragments.availableAppointmentsFragment"
-        android:label="fragment_available_appointments"
-        tools:layout="@layout/fragment_available_appointments" />
+        android:id="@+id/activityProfileFragment"
+        android:name="com.example.hairqueue.Fragments.ActivityProfileFragment"
+        android:label="activity_profile"
+        tools:layout="@layout/activity_profile" >
+        <action
+            android:id="@+id/action_activityProfileFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
 </navigation>
