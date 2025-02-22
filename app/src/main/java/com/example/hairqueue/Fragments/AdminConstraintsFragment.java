@@ -349,9 +349,9 @@ public class AdminConstraintsFragment extends Fragment {
             // Create appointment
             AppointmentModel appointment = new AppointmentModel(
                     UUID.randomUUID().toString(),
-                    null,
+                    "",
                     selectedDate,
-                    null,
+                    "",
                     "Available",
                     startTime,
                     endTime,
@@ -378,6 +378,8 @@ public class AdminConstraintsFragment extends Fragment {
                     workDayOptionsLayout.setVisibility(View.GONE);
                    // selectedDateTextView.setText("Selected Date: " + selectedDate + "\n\n" + schedule.toString());
                     selectedDateTextView.setText("Selected Date: " + selectedDate);
+                    Navigation.findNavController(saveConstraintsButton).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
 
                 })
                 .addOnFailureListener(e -> {

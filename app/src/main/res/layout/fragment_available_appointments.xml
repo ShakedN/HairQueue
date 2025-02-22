@@ -1,13 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
+    android:gravity="center"
     android:background="@color/background_beige">
+    <!-- 🌟 App Logo (Centered) -->
+    <ImageView
+        android:id="@+id/appLogo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/logo"
+        android:layout_gravity="center"
+        android:contentDescription="App Logo"
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="12dp" />
+    <!-- 📌 Title for Appointments List -->
+    <TextView
+        android:id="@+id/titleAppointments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upcoming Appointments"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp"/>
 
-    <!-- ListView to display the available appointments -->
-    <ListView
-        android:id="@+id/availableAppointmentsListView"
+    <!-- 🚫 No Appointments Found Message -->
+    <TextView
+        android:id="@+id/emptyView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="🚫No appointments found."
+        android:textSize="16sp"
+        android:textStyle="italic"
+        android:textColor="@android:color/darker_gray"
+        android:padding="8dp"
+        android:visibility="gone" />
+
+    <!-- 🗂 RecyclerView Styled as a Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="8dp"
+        app:cardElevation="6dp"
+        app:cardCornerRadius="12dp"
+        android:background="@android:color/white">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/availableAppointmentsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="12dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"/>
+    </androidx.cardview.widget.CardView>
+
 </LinearLayout>

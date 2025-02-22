@@ -52,11 +52,11 @@
             android:id="@+id/action_scheduleManagement_to_adminFragmentConstraints"
             app:destination="@id/adminFragmentConstraints" />
         <action
-            android:id="@+id/action_scheduleManagement_to_availableAppointmentsFragment"
-            app:destination="@id/availableAppointmentsFragment" />
-        <action
             android:id="@+id/action_scheduleManagement_to_occupiedAppointmentsFragment"
             app:destination="@id/occupiedAppointmentsFragment" />
+        <action
+            android:id="@+id/action_scheduleManagement_to_availableAppointmentsFragment"
+            app:destination="@id/availableAppointmentsFragment2" />
     </fragment>
     <fragment
         android:id="@+id/adminFragmentConstraints"
@@ -68,13 +68,13 @@
             app:destination="@id/adminHomeFragment" />
     </fragment>
     <fragment
-        android:id="@+id/availableAppointmentsFragment"
-        android:name="com.example.hairqueue.Fragments.availableAppointmentsFragment"
-        android:label="fragment_available_appointments"
-        tools:layout="@layout/fragment_available_appointments" />
-    <fragment
         android:id="@+id/occupiedAppointmentsFragment"
         android:name="com.example.hairqueue.Fragments.occupiedAppointmentsFragment"
         android:label="fragment_occupied_appointments"
         tools:layout="@layout/fragment_occupied_appointments" />
+    <fragment
+        android:id="@+id/availableAppointmentsFragment2"
+        android:name="com.example.hairqueue.Fragments.availableAppointmentsFragment"
+        android:label="fragment_available_appointments"
+        tools:layout="@layout/fragment_available_appointments" />
 </navigation>
