@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -26,6 +27,8 @@ public class AdminHomeFragment extends Fragment {
     private List<AppointmentModel> appointments;
     private AppointmentAdapter appointmentAdapter;
     private Button buttonScheduleManagement;
+    private ImageButton profileButton;
+    private ImageButton logoutButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -36,6 +39,8 @@ public class AdminHomeFragment extends Fragment {
         // Initialize the RecyclerView and Button
         appointmentsRecyclerView = view.findViewById(R.id.availableAppointmentsRecyclerView);
         buttonScheduleManagement = view.findViewById(R.id.buttonSchedule);
+        profileButton = view.findViewById(R.id.profileButton);
+        logoutButton = view.findViewById(R.id.logoutButton);
 
         // Initialize the appointments list
         appointments = new ArrayList<>();
@@ -50,6 +55,18 @@ public class AdminHomeFragment extends Fragment {
         buttonScheduleManagement.setOnClickListener(v -> {
             // Navigate to Schedule Management
             Navigation.findNavController(v).navigate(R.id.action_adminHomeFragment_to_scheduleManagement);
+        });
+
+        profileButton.setOnClickListener(v -> {
+             //Navigate to Profile
+            Navigation.findNavController(v).navigate(R.id.action_adminHomeFragment_to_adminProfileFragment);
+            Toast.makeText(getContext(), "Profile", Toast.LENGTH_SHORT).show();
+        });
+
+        logoutButton.setOnClickListener(v -> {
+            // Navigate to Login
+            Navigation.findNavController(v).navigate(R.id.action_adminHomeFragment_to_loginFragment);
+            Toast.makeText(getContext(), "Logout", Toast.LENGTH_SHORT).show();
         });
 
         return view;

@@ -58,7 +58,12 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
         holder.tvEndTime.setText("End: " + appointment.getEndTime());
         holder.tvDuration.setText("Duration: " + appointment.getDuration() + " mins");
         holder.tvStatus.setText("Status: " + appointment.getStatus());
-        holder.address.setText("Address: " + appointment.getAddress());
+        appointment.loadAdminAddress(() -> {
+            // Update the address TextView after the admin address is loaded
+            String address = appointment.getAddress();
+            holder.address.setText("Address: " + address);
+        });
+
 
         if ("Available".equals(appointment.getStatus())) {
             holder.tvStatus.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark));

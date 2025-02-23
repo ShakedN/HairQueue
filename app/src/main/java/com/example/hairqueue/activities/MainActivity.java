@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             Toast.makeText(MainActivity.this,"reg ok",Toast.LENGTH_LONG).show();
+                            addDATA();
                             view.post(() -> Navigation.findNavController(view).navigate(R.id.action_regFregment_to_loginFregment));
 
                         } else {
@@ -117,11 +118,10 @@ public class MainActivity extends AppCompatActivity {
         // Get the current user's UID (to store the data under that user's phone number)
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String uid = currentUser.getUid();  // Use UID if needed for other purposes but not as the key for the phone
 
-            // Reference to the user's data in the database, using phone as the key
+            // Reference to the user's data in the database, using email as the key
             username=email.split("@")[0];
-            DatabaseReference userRef = database.getReference("users").child(username);  // Save by phone number
+            DatabaseReference userRef = database.getReference("users").child(username);  // Save by email
 
             // Create a User object with the email and phone numberl
             UserModel user = new UserModel(email, phone,full_name);

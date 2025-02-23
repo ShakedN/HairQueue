@@ -10,8 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
-        >
+        android:padding="16dp">
 
         <!-- App logo -->
         <LinearLayout
@@ -53,15 +52,36 @@
 
 
         <!-- User Greeting -->
-        <TextView
-            android:id="@+id/greetingTextView"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Hello, User!"
-            android:textColor="@color/primary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/greetingTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="8dp"
+                android:text="Hello, User!"
+                android:textColor="@color/primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp"
+                android:layout_gravity="center_vertical"/>
+
+            <ImageView
+                android:id="@+id/greetingIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/morning"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="8dp"
+
+                android:contentDescription="Morning Icon"/>
+        </LinearLayout>
+
 
         <!-- Divider line -->
         <View
