@@ -7,11 +7,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import com.example.hairqueue.R;
+import java.util.Calendar;
 
 public class ScheduleManagement extends Fragment {
 
@@ -27,7 +26,7 @@ public class ScheduleManagement extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_schedule_management, container, false);
 
-        // Initialize the CalendarView and TextView
+        // Initialize the CalendarView, TextView, and Buttons
         calendarView = view.findViewById(R.id.calendarView);
         selectedDateTextView = view.findViewById(R.id.selectedDateTextView);
         btnShowConstraints = view.findViewById(R.id.btnShowConstraints);
@@ -43,8 +42,27 @@ public class ScheduleManagement extends Fragment {
             selectedDateTextView.setText("Selected Date: " + selectedDate);
             selectedDateTextView.setVisibility(View.VISIBLE);
 
-            // Show the buttons
-            btnShowConstraints.setVisibility(View.VISIBLE);
+            // Create a Calendar instance for the selected date and reset time to midnight
+            Calendar selectedCalendar = Calendar.getInstance();
+            selectedCalendar.set(year, month, dayOfMonth, 0, 0, 0);
+            selectedCalendar.set(Calendar.MILLISECOND, 0);
+
+            // Get current date as a Calendar instance and reset time to midnight
+            Calendar today = Calendar.getInstance();
+            today.set(Calendar.HOUR_OF_DAY, 0);
+            today.set(Calendar.MINUTE, 0);
+            today.set(Calendar.SECOND, 0);
+            today.set(Calendar.MILLISECOND, 0);
+
+            // Check if the selected date is in the past
+            if (selectedCalendar.before(today)) {
+                // For past dates, hide btnShowConstraints
+                btnShowConstraints.setVisibility(View.GONE);
+            } else {
+                // For today or future dates, show btnShowConstraints
+                btnShowConstraints.setVisibility(View.VISIBLE);
+            }
+            // Always show available and occupied appointment buttons
             btnShowAvailableAppointments.setVisibility(View.VISIBLE);
             btnShowOccupiedAppointments.setVisibility(View.VISIBLE);
 
@@ -58,7 +76,6 @@ public class ScheduleManagement extends Fragment {
             btnShowAvailableAppointments.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("selectedDate", selectedDate);
-
                 Navigation.findNavController(v).navigate(R.id.action_scheduleManagement_to_availableAppointmentsFragment, bundle);
             });
 
