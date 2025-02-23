@@ -54,6 +54,8 @@ public class ClientHomeFragment extends Fragment {
     private DatabaseReference dbRef;
     private Button buttonBook;
     private ImageButton buttonProfile;
+
+    private ImageButton buttonList;
     private ImageButton buttonLogout;
     ImageView greetingIcon;
 
@@ -72,6 +74,7 @@ public class ClientHomeFragment extends Fragment {
         buttonBook = view.findViewById(R.id.btnBookAppointment);
         buttonLogout = view.findViewById(R.id.logoutButton);
         buttonProfile = view.findViewById(R.id.profileButton);
+        buttonList = view.findViewById(R.id.appointmentListButton);
         greetingTextView = view.findViewById(R.id.greetingTextView);
         recyclerView = view.findViewById(R.id.rvAvailableAppointments);
         greetingIcon = view.findViewById(R.id.greetingIcon);
@@ -104,16 +107,22 @@ public class ClientHomeFragment extends Fragment {
         buttonProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle the button click event here
                 Toast.makeText(getContext(), "Profile", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(v).navigate(R.id.action_clientHomeFragment_to_activityProfileFragment);
+            }
+        });
+
+        buttonList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getContext(), "Appointments list", Toast.LENGTH_SHORT).show();
+                Navigation.findNavController(v).navigate(R.id.action_clientHomeFragment_to_clientAppointmentsFragment);
             }
         });
 
         buttonLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle the button click event here
                 Toast.makeText(getContext(), "Logout", Toast.LENGTH_SHORT).show();
                 mAuth.signOut();
                 Navigation.findNavController(v).navigate(R.id.action_clientHomeFragment_to_loginFragment);

@@ -371,23 +371,40 @@ public class AdminConstraintsFragment extends Fragment {
         }
 
         // Save appointments to Realtime Database
-        DateModel dateModel = new DateModel(selectedDate, "Work day", appointments);
+        DateModel dateModel = new DateModel(selectedDate, "Work day");
         dbRef.child(selectedDate).setValue(dateModel)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firebase", "Appointments saved for date: " + selectedDate);
                     Toast.makeText(getContext(), "Schedule saved successfully!", Toast.LENGTH_SHORT).show();
                     saveConstraintsButton.setVisibility(View.GONE);
                     workDayOptionsLayout.setVisibility(View.GONE);
-                   // selectedDateTextView.setText("Selected Date: " + selectedDate + "\n\n" + schedule.toString());
                     selectedDateTextView.setText("Selected Date: " + selectedDate);
+
+                    //save only the appointments with unique IDs
+                    for (AppointmentModel appointment : appointments) {
+                        // Generate a new unique ID for the appointment using push()
+                        String appointmentId = dbRef.child(selectedDate).child("appointments").push().getKey();
+
+                        // Update the appointment ID in the AppointmentModel
+                        appointment.setAppointmentId(appointmentId);
+
+                        // Save the updated appointment under the "appointments" node with the new unique ID
+                        dbRef.child(selectedDate).child("appointments").child(appointmentId).setValue(appointment)
+                                .addOnSuccessListener(aVoid1 -> {
+                                    Log.d("Firebase", "Appointment ID updated: " + appointmentId);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Firebase", "Error updating appointment ID", e);
+                                });
+                    }
+
                     Navigation.findNavController(saveConstraintsButton).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
-
-
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Firebase", "Error saving appointments", e);
                     Toast.makeText(getContext(), "Error saving schedule", Toast.LENGTH_SHORT).show();
                 });
+
     }
 
     // Helper method to convert picker value to actual hour
