@@ -1,18 +1,18 @@
 package com.example.hairqueue.Fragments;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 
 import com.example.hairqueue.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,36 +23,44 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class ActivityProfileFragment extends Fragment {
 
-    private EditText fullNameEditText, emailEditText, phoneEditText;
-    private Button btnLogOut;
-    private Button editProfileButton;
+public class AdminProfileFragment extends Fragment {
+
+    private EditText fullNameAdminEditText, emailAdminEditText, phoneAdminEditText, addressAdminEditText;
+    private Button logoutAdminButton;
+    private Button editProfileAdminButton;
 
     private FirebaseAuth mAuth;
     private DatabaseReference usersRef;
 
+
+    public AdminProfileFragment() {
+        // Required empty public constructor
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_profile, container, false);
-
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_admin_profile, container, false);
         // Link XML views to Java variables
-        fullNameEditText = view.findViewById(R.id.fullNameEditText);
-        emailEditText = view.findViewById(R.id.emailEditText);
-        phoneEditText = view.findViewById(R.id.phoneEditText);
-        btnLogOut = view.findViewById(R.id.btnLogOut);
-        editProfileButton = view.findViewById(R.id.editProfileButton);
+        fullNameAdminEditText = view.findViewById(R.id.fullNameAdminEditText);
+        emailAdminEditText = view.findViewById(R.id.emailAdminEditText);
+        phoneAdminEditText = view.findViewById(R.id.phoneAdminEditText);
+        addressAdminEditText = view.findViewById(R.id.addressAdminEditText);
+        logoutAdminButton = view.findViewById(R.id.LogoutButton);
+        editProfileAdminButton = view.findViewById(R.id.editProfileAdminButton);
 
         // Disable edit text fields initially (set them to be not editable)
-        fullNameEditText.setEnabled(false);
-        emailEditText.setEnabled(false);
-        phoneEditText.setEnabled(false);
+        fullNameAdminEditText.setEnabled(false);
+        emailAdminEditText.setEnabled(false);
+        phoneAdminEditText.setEnabled(false);
+        addressAdminEditText.setEnabled(false);
 
         // Initialize Firebase Authentication
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-
 
         if (currentUser != null) {
             String userEmail = currentUser.getEmail(); // Get the current user's email
@@ -61,7 +69,7 @@ public class ActivityProfileFragment extends Fragment {
                 usersRef = FirebaseDatabase.getInstance().getReference("users");
 
                 // Query Firebase to find the user by email
-                usersRef.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+                usersRef.orderByChild("email").equalTo(userEmail).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
@@ -70,18 +78,19 @@ public class ActivityProfileFragment extends Fragment {
                                 String fullName = userSnapshot.child("fullName").getValue(String.class);
                                 String email = userSnapshot.child("email").getValue(String.class);
                                 String phone = userSnapshot.child("phone").getValue(String.class);
+                                String address = userSnapshot.child("address").getValue(String.class);
 
                                 // Update UI elements with user data
-                                fullNameEditText.setText(fullName != null ? fullName : "No Name");
-                                emailEditText.setText(email != null ? email : "No Email");
-                                phoneEditText.setText(phone != null ? phone : "No Phone");
+                                fullNameAdminEditText.setText(fullName != null ? fullName : "No Name");
+                                emailAdminEditText.setText(email != null ? email : "No Email");
+                                phoneAdminEditText.setText(phone != null ? phone : "No Phone");
+                                addressAdminEditText.setText(address != null ? address : "No Adress");
                             }
                         } else {
                             // Show a toast message if user data is not found
                             Toast.makeText(getContext(), "User data not found", Toast.LENGTH_SHORT).show();
                         }
                     }
-
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         // Handle errors when fetching data
@@ -98,45 +107,50 @@ public class ActivityProfileFragment extends Fragment {
         }
 
         // Logout button functionality
-        btnLogOut.setOnClickListener(v -> {
+        logoutAdminButton.setOnClickListener(v -> {
             mAuth.signOut(); // Sign out the user
             Toast.makeText(getContext(), "Logged Out", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(view).navigate(R.id.action_activityProfileFragment_to_loginFragment); // Navigate to login
+            Navigation.findNavController(view).navigate(R.id.action_adminProfileFragment_to_loginFragment); // Navigate to login
         });
 
 
-        editProfileButton.setOnClickListener(v -> {
-            boolean isEditable = phoneEditText.isEnabled();
+        editProfileAdminButton.setOnClickListener(v -> {
+                boolean isEditable = phoneAdminEditText.isEnabled(); //one of the edit text fields that can change
 
             if (isEditable) {
-                // מצב שמירה - בדיקה אם השדות מלאים
-                String fullName = fullNameEditText.getText().toString().trim();
-                String phone = phoneEditText.getText().toString().trim();
+                // save mode -  check if the fields are full
+                String fullName = fullNameAdminEditText.getText().toString().trim();
+                String email = emailAdminEditText.getText().toString().trim();
+                String phone = phoneAdminEditText.getText().toString().trim();
+                String address = addressAdminEditText.getText().toString().trim();
 
-                if (fullName.isEmpty() || phone.isEmpty()) {
-                    Toast.makeText(getContext(), "Full Name and Phone cannot be empty", Toast.LENGTH_SHORT).show();
+                if (fullName.isEmpty() || phone.isEmpty() || address.isEmpty()) {
+                    Toast.makeText(getContext(), "Full Name, Phone and Address cannot be empty", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                saveUserData(fullName, phone);
-                fullNameEditText.setEnabled(false);
-                phoneEditText.setEnabled(false);
-                editProfileButton.setText("Edit");
+                saveAdminData(fullName, phone, address);
+                fullNameAdminEditText.setEnabled(false);
+                emailAdminEditText.setEnabled(false); //not editable - email only for display
+                phoneAdminEditText.setEnabled(false);
+                addressAdminEditText.setEnabled(false);
+                editProfileAdminButton.setText("Edit");
+                Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
             } else {
-                // מצב עריכה
-                fullNameEditText.setEnabled(true); // לא מאפשרים לשנות שם
-                phoneEditText.setEnabled(true);
-                editProfileButton.setText("Save");
+                // edit mode
+                fullNameAdminEditText.setEnabled(true); // לא מאפשרים לשנות שם
+                phoneAdminEditText.setEnabled(true);
+                addressAdminEditText.setEnabled(true);
+                editProfileAdminButton.setText("Save");
             }
         });
 
 
         return view;
+
     }
 
-
-    // פונקציה לשמירת הנתונים ב-Firebase
-    private void saveUserData(String fullName, String phone) {
+    private void saveAdminData(String fullName, String phone, String address) {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getEmail().split("@")[0];; // יצירת UID לפי המייל
@@ -144,10 +158,9 @@ public class ActivityProfileFragment extends Fragment {
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
             userRef.child("fullName").setValue(fullName);
             userRef.child("phone").setValue(phone);
+            userRef.child("address").setValue(address);
 
             Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
         }
     }
-
-
 }

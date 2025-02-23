@@ -1,17 +1,24 @@
 package com.example.hairqueue.Fragments;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.example.hairqueue.Adapters.AppointmentAdapter;
@@ -48,6 +55,7 @@ public class ClientHomeFragment extends Fragment {
     private Button buttonBook;
     private ImageButton buttonProfile;
     private ImageButton buttonLogout;
+    ImageView greetingIcon;
 
     public ClientHomeFragment() {
         // Required empty public constructor
@@ -66,6 +74,8 @@ public class ClientHomeFragment extends Fragment {
         buttonProfile = view.findViewById(R.id.profileButton);
         greetingTextView = view.findViewById(R.id.greetingTextView);
         recyclerView = view.findViewById(R.id.rvAvailableAppointments);
+        greetingIcon = view.findViewById(R.id.greetingIcon);
+
 
         // Initialize the appointments list
         appointmentList = new ArrayList<>();
@@ -122,14 +132,30 @@ public class ClientHomeFragment extends Fragment {
             String email = user.getEmail();
             dbRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference usersRef = dbRef.child("users");
+
+            // Add a listener to fetch user data from the database
             usersRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                         String fullName = userSnapshot.child("fullName").getValue(String.class);
                         String userEmail = userSnapshot.child("email").getValue(String.class);
+
+                        // Check if the current user's email matches the one in the database
                         if (email != null && email.equals(userEmail)) {
-                            greetingTextView.setText("Hello, " + fullName);
+                            // Set greeting message based on the time of day
+                            String greeting = getGreetingMessage();
+
+                            // Get the appropriate icon based on the greeting
+                            int iconResId = getGreetingIcon(greeting);
+
+                            // Update the ImageView with the correct icon
+
+                            greetingIcon.setImageResource(iconResId);
+
+                            // Create the greeting text
+                            String fullGreeting = greeting + ", " + fullName + "!";
+                            greetingTextView.setText(fullGreeting);
                             break;
                         }
                     }
@@ -137,11 +163,44 @@ public class ClientHomeFragment extends Fragment {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
+                    // Log an error if the data retrieval fails
                     Log.w("Database Error", "Failed to read user data.", error.toException());
                 }
             });
         }
     }
+
+
+    private String getGreetingMessage() {
+        // Get the current time
+        Calendar calendar = Calendar.getInstance();
+        int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+
+        // Determine the greeting message based on the time of day
+        if (hourOfDay >= 5 && hourOfDay < 12) {
+            return "Good Morning"; // 5:00 - 11:59
+        } else if (hourOfDay >= 12 && hourOfDay < 18) {
+            return "Good Afternoon"; // 12:00 - 17:59
+        } else {
+            return "Good Evening"; // 18:00 - 4:59
+        }
+    }
+
+    private int getGreetingIcon(String greeting) {
+        // Return the corresponding icon resource ID based on the greeting message
+        switch (greeting) {
+            case "Good Morning":
+                return R.drawable.morning; // Icon for Good Morning
+            case "Good Afternoon":
+                return R.drawable.afternoon; // Icon for Good Afternoon
+            case "Good Evening":
+                return R.drawable.evening; // Icon for Good Evening
+            default:
+                return R.drawable.logo; // Default icon if no match
+        }
+    }
+
+
 
 
     private void loadClosestAvailableAppointments() {

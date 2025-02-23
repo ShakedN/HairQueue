@@ -356,8 +356,7 @@ public class AdminConstraintsFragment extends Fragment {
                     "Available",
                     startTime,
                     endTime,
-                    30,
-                    ""
+                    30
             );
             appointments.add(appointment);
 
