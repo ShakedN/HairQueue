@@ -40,6 +40,14 @@
                 android:contentDescription="profile"
                 android:src="@drawable/profile_icon" />
             <ImageButton
+                android:id="@+id/appointmentListButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="list"
+                android:src="@drawable/list_icon" />
+            <ImageButton
                 android:id="@+id/logoutButton"
                 android:layout_width="50dp"
                 android:layout_height="50dp"

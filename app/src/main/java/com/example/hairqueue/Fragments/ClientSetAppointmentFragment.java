@@ -10,12 +10,15 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hairqueue.Adapters.AppointmentAdapter;
 import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,26 +36,42 @@ public class ClientSetAppointmentFragment extends Fragment {
     private List<AppointmentModel> appointmentList = new ArrayList<>();
     private TextView noAvailableAppointments;
 
+    private String selectedDate;
+    private String selectedService;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_client_set_appointment, container, false);
 
-        //get selected date from the bundle
+        //get selected date and service from the bundle
         Bundle args = getArguments();
-        String selectedDate = args != null ? args.getString("selectedDate") : null;
+        if (args != null) {
+            selectedDate = args.getString("selectedDate");
+            selectedService = args.getString("selectedService"); // Retrieve the service
+        }
+
+        Toast.makeText(getContext(), "Service: " + selectedService, Toast.LENGTH_LONG).show();
 
         //show the selected date
         Toast.makeText(getContext(), "Selected Date: " + selectedDate, Toast.LENGTH_SHORT).show();
 
         //RecyclerView connection
-        RecyclerView recyclerView = view.findViewById(R.id.availableAppointmentsPickerRecyclerView);
+        recyclerView = view.findViewById(R.id.availableAppointmentsPickerRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         //Addapter creation
-        List<AppointmentModel> appointmentList = new ArrayList<>();
-        AppointmentAdapter appointmentAdapter = new AppointmentAdapter(getContext(), appointmentList);
+        //List<AppointmentModel> appointmentList = new ArrayList<>(); App
+        appointmentAdapter = new AppointmentAdapter(getContext(), appointmentList, appointment -> {
+            if (appointment.getAppointmentId() == null || appointment.getAppointmentId().isEmpty()) {
+                Log.e("ClientSetAppointment", "Appointment ID is invalid");
+                return;
+            }
+
+            bookAppointment(appointment);
+            Navigation.findNavController(view).navigate(R.id.action_clientSetAppointmentFragment_to_clientAppointmentsFragment);
+        });
         recyclerView.setAdapter(appointmentAdapter);
 
         TextView tvNoAppointments = view.findViewById(R.id.noAppointmentsTV);
@@ -104,4 +123,105 @@ public class ClientSetAppointmentFragment extends Fragment {
         return view;
     }
 
+
+    // update appointment on firebase
+    private void bookAppointment(AppointmentModel appointment) {
+        //Validate the user
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || user.getEmail() == null) {
+            Toast.makeText(getContext(), "User is not logged in or email is missing!", Toast.LENGTH_LONG).show();
+           return;
+       }
+
+        String userEmail = user.getEmail();
+        String userId = userEmail.substring(0, userEmail.indexOf("@"));
+
+        if (userId.isEmpty()) {
+            Toast.makeText(getContext(), "Extracted User ID is empty!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        //Validate the appointment
+        if (appointment == null) {
+            Toast.makeText(getContext(), "Appointment object is null!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String appointmentId = appointment.getAppointmentId();
+        if (appointmentId == null || appointmentId.isEmpty()) {
+            Toast.makeText(getContext(), "Appointment ID is empty or invalid!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (appointment.getDate() == null || appointment.getStartTime() == null) {
+            Toast.makeText(getContext(), "Date or time is missing!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        //Use the selectedService directly??
+        //String service = selectedService;
+
+        //Update appointment details
+        appointment.setStatus("Occupied");
+        appointment.setEmail(userEmail);
+        appointment.setService(selectedService);
+
+        //Create database references
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("appointments").child(appointmentId);
+        DatabaseReference appointmentRef = FirebaseDatabase.getInstance().getReference("dates").child(appointment.getDate()).child("appointments").child(appointmentId);
+
+        //Show a toast with appointment details before saving
+        String appointmentDetails = "Appointment booked!\nID: " + appointmentId +
+                "\nDate: " + appointment.getDate() +
+                "\nTime: " + appointment.getStartTime() +
+                "\nService: " + selectedService;
+        Toast.makeText(getContext(), appointmentDetails, Toast.LENGTH_LONG).show();
+
+        //Save the appointment in Firebase (in both locations)
+        userRef.setValue(appointment)
+                .addOnSuccessListener(aVoid -> {
+                    // Save the service in the appointmentRef
+                    appointmentRef.child("status").setValue("Occupied")
+                            .addOnSuccessListener(aVoid1 -> appointmentRef.child("email").setValue(userEmail)
+                                    .addOnSuccessListener(aVoid2 -> appointmentRef.child("service").setValue(selectedService)
+                                            .addOnSuccessListener(aVoid3 -> {
+                                                // Add a toast to display the service
+                                                Toast.makeText(getContext(), "✅ Appointment successfully booked!\nService: " + selectedService, Toast.LENGTH_LONG).show();
+                                                appointmentAdapter.notifyDataSetChanged();
+                                            })
+                                            .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update service!", Toast.LENGTH_LONG).show())
+                                    )
+                                    .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update email!", Toast.LENGTH_LONG).show())
+                            )
+                            .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update status!", Toast.LENGTH_LONG).show());
+                })
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to save appointment in Firebase!", Toast.LENGTH_LONG).show());
+    }
+
+
+
+
+
+
+//    private void saveAppointmentToUser(AppointmentModel appointment) {
+//        // קבלת המייל של המשתמש הנוכחי
+//        String userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+//
+//        // חילוץ מזהה המשתמש (החלק לפני ה-@)
+//        String userId = userEmail != null ? userEmail.split("@")[0] : "";
+//
+//        // נתיב הרשימה של התורים של המשתמש ב-Firebase
+//        DatabaseReference userAppointmentsRef = FirebaseDatabase.getInstance().getReference("users")
+//                .child(userId).child("appointments");
+//
+//        // הוספת התור תחת רשימת ה-appointments של המשתמש
+//        userAppointmentsRef.child(appointment.getAppointmentId()).setValue(appointment)
+//                .addOnSuccessListener(aVoid -> {
+//                    // עדכון הממשק לאחר הצלחה
+//                    Toast.makeText(getContext(), "Appointment saved under your profile", Toast.LENGTH_SHORT).show();
+//                })
+//                .addOnFailureListener(e -> {
+//                    Toast.makeText(getContext(), "Failed to save appointment", Toast.LENGTH_SHORT).show();
+//                });
+//    }
 }

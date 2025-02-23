@@ -30,10 +30,25 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     private Context context;
     private DatabaseReference dbRef;
 
+    private OnAppointmentClickListener listener;
+
+    public interface OnAppointmentClickListener {
+        void onAppointmentClick(AppointmentModel appointment);
+    }
+
     public AppointmentAdapter(Context context, List<AppointmentModel> appointments) {
         this.context = context;
         this.appointments = appointments;
+        this. listener = null;
         // Initialize Firebase Realtime Database
+        dbRef = FirebaseDatabase.getInstance().getReference("dates");
+    }
+
+    //constructor with clickable items
+    public AppointmentAdapter(Context context, List<AppointmentModel> appointments, OnAppointmentClickListener listener) {
+        this.context = context;
+        this.appointments = appointments;
+        this.listener = listener;
         dbRef = FirebaseDatabase.getInstance().getReference("dates");
     }
 
@@ -68,6 +83,11 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
 
         holder.tvAppointmentId.setText(appointment.getAppointmentId());
         holder.tvEmail.setText("email@example.com");
+
+        //make items clickable if listener is not null
+        if (listener != null) {
+            holder.itemView.setOnClickListener(v -> listener.onAppointmentClick(appointment));
+        }
     }
 
     @Override

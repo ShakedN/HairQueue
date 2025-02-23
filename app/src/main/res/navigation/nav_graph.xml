@@ -52,6 +52,9 @@
         <action
             android:id="@+id/action_clientHomeFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_clientHomeFragment_to_clientAppointmentsFragment"
+            app:destination="@id/clientAppointmentsFragment" />
     </fragment>
     <fragment
         android:id="@+id/scheduleManagement"
@@ -100,7 +103,11 @@
         android:id="@+id/clientSetAppointmentFragment"
         android:name="com.example.hairqueue.Fragments.ClientSetAppointmentFragment"
         android:label="fragment_client_set_appointment2"
-        tools:layout="@layout/fragment_client_set_appointment" />
+        tools:layout="@layout/fragment_client_set_appointment" >
+        <action
+            android:id="@+id/action_clientSetAppointmentFragment_to_clientAppointmentsFragment"
+            app:destination="@id/clientAppointmentsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/activityProfileFragment"
         android:name="com.example.hairqueue.Fragments.ActivityProfileFragment"
@@ -109,6 +116,15 @@
         <action
             android:id="@+id/action_activityProfileFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/clientAppointmentsFragment"
+        android:name="com.example.hairqueue.Fragments.ClientAppointmentsFragment"
+        android:label="fragment_client_appointments"
+        tools:layout="@layout/fragment_client_appointments" >
+        <action
+            android:id="@+id/action_clientAppointmentsFragment_to_clientHomeFragment"
+            app:destination="@id/clientHomeFragment" />
     </fragment>
 
 </navigation>
