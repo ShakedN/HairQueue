@@ -86,7 +86,6 @@
                 android:src="@drawable/morning"
                 android:layout_gravity="bottom"
                 android:layout_marginBottom="8dp"
-
                 android:contentDescription="Morning Icon"/>
         </LinearLayout>
 

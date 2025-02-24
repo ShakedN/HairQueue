@@ -9,6 +9,20 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
+        <!-- App logo -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="left"
+            android:layout_marginBottom="10dp">
+            <ImageView
+                android:id="@+id/appLogo"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:contentDescription="App Logo"
+                android:src="@drawable/logo" />
+        </LinearLayout>
 
         <!-- Selected Date -->
         <TextView
@@ -49,7 +63,8 @@
                 android:text="Day Off"
                 android:textColor="@color/radio_text_color"
                 android:textSize="16sp"
-                android:gravity="center" />
+                android:gravity="center"
+                android:layout_marginTop="8dp"/>
 
             <RadioButton
                 android:id="@+id/sickDayRadioButton"
@@ -61,7 +76,8 @@
                 android:text="Sick Day"
                 android:textColor="@color/radio_text_color"
                 android:textSize="16sp"
-                android:gravity="center" />
+                android:gravity="center"
+                android:layout_marginTop="8dp"/>
         </RadioGroup>
 
 

@@ -165,14 +165,14 @@ public class ClientAppointmentsFragment extends Fragment {
     }
 
     //private long getAppointmentTimestamp(String date, String time) {
-        //try {
-            //SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-            //Date parsedDate = sdf.parse(date + " " + time);
-           // return parsedDate != null ? parsedDate.getTime() : 0;
-       // } catch (ParseException e) {
-          //  e.printStackTrace();
-          //  return 0;
-        //}
+    //try {
+    //SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+    //Date parsedDate = sdf.parse(date + " " + time);
+    // return parsedDate != null ? parsedDate.getTime() : 0;
+    // } catch (ParseException e) {
+    //  e.printStackTrace();
+    //  return 0;
+    //}
     //}
 
     private void getUserName() {

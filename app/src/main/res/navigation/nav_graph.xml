@@ -143,6 +143,9 @@
         <action
             android:id="@+id/action_clientAppointmentsFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_clientAppointmentsFragment_to_clientHomeFragment"
+            app:destination="@id/clientHomeFragment" />
     </fragment>
 
 </navigation>
