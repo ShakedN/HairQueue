@@ -114,7 +114,7 @@ public class AdminConstraintsFragment extends Fragment {
                             saveConstraintsButton.setVisibility(View.VISIBLE);
                             workDayOptionsLayout.setVisibility(View.VISIBLE);
                             alertDialog.dismiss();
-                           disableRadioGroup(dayTypeRadioGroup);
+                            disableRadioGroup(dayTypeRadioGroup);
 
                         }
                     }
@@ -155,21 +155,19 @@ public class AdminConstraintsFragment extends Fragment {
                                         }
                                     });
                                     dbRef.child(selectedDate).child("dateStatus").setValue("Day off");
-
                                     disableRadioGroup(dayTypeRadioGroup);
                                     alertDialog.dismiss();
                                 });
                             }
-                         else {
+
                             if ("Day off".equals(currentStatus)) {
                                 alertDialog.dismiss();
                                 Toast.makeText(getContext(), "It is already a day off", Toast.LENGTH_LONG).show();
-                                enableRadioGroup(dayTypeRadioGroup);
-                            } else {
+                                disableRadioGroup(dayTypeRadioGroup);
                                 alertDialog.dismiss();
                             }
                         }
-                    }
+
 
                     // Handle Sick Day Selection
                     if (checkedId == R.id.sickDayRadioButton) {
@@ -210,9 +208,10 @@ public class AdminConstraintsFragment extends Fragment {
                                 alertDialog.dismiss();
                             });
                         }
-                        else {
-                            alertDialog.dismiss();
-                            Toast.makeText(getContext(), "It is already a sick day", Toast.LENGTH_LONG).show();
+                            if("Sick day".equals(currentStatus)){
+                                alertDialog.dismiss();
+                                disableRadioGroup(dayTypeRadioGroup);
+                                Toast.makeText(getContext(), "It is already a sick day", Toast.LENGTH_LONG).show();
                         }
                     }
                 } else {
