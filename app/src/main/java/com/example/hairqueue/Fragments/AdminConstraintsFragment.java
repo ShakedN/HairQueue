@@ -17,9 +17,11 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.example.hairqueue.Adapters.AppointmentAdapter;
 import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.Models.DateModel;
 import com.example.hairqueue.R;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -31,6 +33,11 @@ public class AdminConstraintsFragment extends Fragment {
 
     private LinearLayout workDayOptionsLayout;
     private Button saveConstraintsButton;
+    private AppointmentAdapter appointmentAdapter;
+    private List<AppointmentModel> occupiedAppointments;
+    private List<AppointmentModel> appointments;
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -48,6 +55,10 @@ public class AdminConstraintsFragment extends Fragment {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
         DatabaseReference appointmentsRef = FirebaseDatabase.getInstance().getReference("appointments");
 
+        appointments = new ArrayList<>();
+        occupiedAppointments = new ArrayList<>();
+        // Initialize AppointmentAdapter
+        appointmentAdapter = new AppointmentAdapter(getContext(), appointments);
         // Initialize work day options
         workDayOptionsLayout = view.findViewById(R.id.workDayOptionsLayout);
         // Save button
@@ -90,7 +101,7 @@ public class AdminConstraintsFragment extends Fragment {
                             alertDialog.show();
 
                             okButton.setOnClickListener(v -> {
-                                dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Work day", null));
+                                dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Work day"));
                                 disableRadioGroup(dayTypeRadioGroup); // Lock selection
                                 saveConstraintsButton.setVisibility(View.VISIBLE);
                                 workDayOptionsLayout.setVisibility(View.VISIBLE);
@@ -98,8 +109,9 @@ public class AdminConstraintsFragment extends Fragment {
                             });
                         }
 
+
                         else {
-                            dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Work day", null));
+
                             saveConstraintsButton.setVisibility(View.VISIBLE);
                             workDayOptionsLayout.setVisibility(View.VISIBLE);
                             alertDialog.dismiss();
@@ -110,7 +122,7 @@ public class AdminConstraintsFragment extends Fragment {
 
                     // Handle Day Off Selection
                     if (checkedId == R.id.dayOffRadioButton) {
-                        if ("Sick day".equals(currentStatus) || "Work day".equals(currentStatus)) {
+                        if ("Sick day".equals(currentStatus) ) {
                             alertTitle.setText("Day Off Confirmation");
                             alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
                             alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
@@ -122,6 +134,28 @@ public class AdminConstraintsFragment extends Fragment {
                                 alertDialog.dismiss();
                             });
 
+                            if("Work day".equals(currentStatus)){
+                                alertTitle.setText("Work day Confirmation");
+                                alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
+                                alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+                                alertDialog.show();
+
+                                okButton.setOnClickListener(v -> {
+                                    dbRef.child(selectedDate).child("appointments").get().addOnCompleteListener(task2 -> {
+                                        if (task2.isSuccessful() && task2.getResult().exists()) {
+                                            for (DataSnapshot appointmentSnapshot : task.getResult().getChildren()) {
+                                                AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
+                                                if ("Available".equals(appointment.getStatus())) {
+                                                    dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off"));
+                                                }
+
+                                            }
+                                        }
+                                    });
+                                    disableRadioGroup(dayTypeRadioGroup);
+                                    alertDialog.dismiss();
+                                });
+                            }
                         } else {
                             if ("Day off".equals(currentStatus)) {
                                 alertDialog.dismiss();
@@ -252,26 +286,21 @@ public class AdminConstraintsFragment extends Fragment {
                                  NumberPicker constraintStartHourPicker, NumberPicker constraintStartMinutePicker,
                                  NumberPicker constraintEndHourPicker, NumberPicker constraintEndMinutePicker,
                                  TextView selectedDateTextView) {
-        // Extract selected date
+        // Extract values from NumberPickers (סימון כ-final כדי שניתן להשתמש בהם בתוך ה־callback)
+        final int startHour = startHourPicker.getValue();
+        final int startMinute = startMinutePicker.getValue() * 30; // 00 or 30
+        final int endHour = endHourPicker.getValue();
+        final int endMinute = endMinutePicker.getValue() * 30;
+        final int lunchStartTotalMinutes = (lunchStartHourPicker.getValue() * 60) + (lunchStartMinutePicker.getValue() * 30);
+        final int lunchEndTotalMinutes = (lunchEndHourPicker.getValue() * 60) + (lunchEndMinutePicker.getValue() * 30);
 
-        // Get values from NumberPickers
-        int startHour = startHourPicker.getValue();
-        int startMinute = startMinutePicker.getValue() * 30; // 00 or 30
-        int endHour = endHourPicker.getValue();
-        int endMinute = endMinutePicker.getValue() * 30;
-        int lunchStartTotalMinutes = (lunchStartHourPicker.getValue() * 60) + (lunchStartMinutePicker.getValue() * 30);
-        int lunchEndTotalMinutes = (lunchEndHourPicker.getValue() * 60) + (lunchEndMinutePicker.getValue() * 30);
+        final boolean isStartNone = constraintStartMinutePicker.getValue() == 2 || constraintStartHourPicker.getValue() == 18;
+        final boolean isEndNone = constraintEndMinutePicker.getValue() == 2 || constraintEndHourPicker.getValue() == 18;
 
-        // Check if either constraint time is "None"
-        boolean isStartNone = constraintStartMinutePicker.getValue() == 2 || constraintStartHourPicker.getValue() == 18;
-        boolean isEndNone = constraintEndMinutePicker.getValue() == 2 || constraintEndHourPicker.getValue() == 18;
-
-        // Calculate constraint times only if they're not "None"
-        int constraintStartTotalMinutes = isStartNone ? -1 :
+        final int constraintStartTotalMinutes = isStartNone ? -1 :
                 (getActualHourFromConstraintPicker(constraintStartHourPicker) * 60) +
                         (constraintStartMinutePicker.getValue() * 30);
-
-        int constraintEndTotalMinutes = isEndNone ? -1 :
+        final int constraintEndTotalMinutes = isEndNone ? -1 :
                 (getActualHourFromConstraintPicker(constraintEndHourPicker) * 60) +
                         (constraintEndMinutePicker.getValue() * 30);
 
@@ -296,8 +325,6 @@ public class AdminConstraintsFragment extends Fragment {
                     Toast.LENGTH_LONG).show();
             return;
         }
-
-        // If both constraints are set, validate their order
         if (!isStartNone && !isEndNone && constraintStartTotalMinutes >= constraintEndTotalMinutes) {
             Toast.makeText(getContext(),
                     "Invalid constraint times! Start must be before end time.",
@@ -306,106 +333,147 @@ public class AdminConstraintsFragment extends Fragment {
         }
 
         // Extract selected date
-        String selectedDate = selectedDateTextView.getText().toString().replace("Selected Date: ", "").trim();
+        final String selectedDate = selectedDateTextView.getText().toString().replace("Selected Date: ", "").trim();
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
 
-        // Firebase setup
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
-
-        StringBuilder schedule = new StringBuilder();
-        int currentHour = startHour;
-        int currentMinute = startMinute;
-        List<AppointmentModel> appointments = new ArrayList<>();
-
-        while (currentHour < endHour || (currentHour == endHour && currentMinute < endMinute)) {
-            int currentTotalMinutes = (currentHour * 60) + currentMinute;
-            int nextTotalMinutes = currentTotalMinutes + 30;
-
-            // Skip appointment if it falls within lunch break
-            if (currentTotalMinutes >= lunchStartTotalMinutes && currentTotalMinutes < lunchEndTotalMinutes) {
-                currentMinute += 30;
-                if (currentMinute >= 60) {
-                    currentMinute = 0;
-                    currentHour++;
+        // טוענים את התורים הקיימים עבור התאריך הנבחר
+        appointmentAdapter.getAppointmentsByDate(selectedDate, task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                List<AppointmentModel> allAppointments = task.getResult();
+                if (allAppointments == null) {
+                    allAppointments = new ArrayList<>();
                 }
-                continue;
-            }
-
-            // Skip appointment if constraints are set (both must be set at this point) and time falls within constraint period
-            if (!isStartNone && !isEndNone &&
-                    currentTotalMinutes >= constraintStartTotalMinutes &&
-                    currentTotalMinutes < constraintEndTotalMinutes) {
-                currentMinute += 30;
-                if (currentMinute >= 60) {
-                    currentMinute = 0;
-                    currentHour++;
+                // נעדכן את רשימת התורים התפוסים
+                occupiedAppointments.clear();
+                for (AppointmentModel appointment : allAppointments) {
+                    if ("Occupied".equals(appointment.getStatus())) {
+                        occupiedAppointments.add(appointment);
+                    }
                 }
-                continue;
+            } else {
+                Log.w("AppointmentAdapter", "There is no passed appointments.", task.getException());
             }
 
-            // Generate appointment times
-            String startTime = String.format("%02d:%02d", currentHour, currentMinute);
-            int nextHour = nextTotalMinutes / 60;
-            int nextMinute = nextTotalMinutes % 60;
-            String endTime = String.format("%02d:%02d", nextHour, nextMinute);
+            // כעת, אחרי שטענו את התורים הקיימים, ניצור את לוח הזמנים החדש
+            appointments.clear();
+            StringBuilder schedule = new StringBuilder();
+            int currentHourLocal = startHour;
+            int currentMinuteLocal = startMinute;
 
-            // Create appointment
-            AppointmentModel appointment = new AppointmentModel(
-                    UUID.randomUUID().toString(),
-                    "",
-                    selectedDate,
-                    "",
-                    "Available",
-                    startTime,
-                    endTime,
-                    30
-            );
-            appointments.add(appointment);
+            while (currentHourLocal < endHour || (currentHourLocal == endHour && currentMinuteLocal < endMinute)) {
+                int currentTotalMinutes = (currentHourLocal * 60) + currentMinuteLocal;
+                int nextTotalMinutes = currentTotalMinutes + 30;
 
-            schedule.append(startTime).append(" - ").append(endTime).append("\n");
+                // דילוג על זמנים בתוך הפסקת צהריים
+                if (currentTotalMinutes >= lunchStartTotalMinutes && currentTotalMinutes < lunchEndTotalMinutes) {
+                    currentMinuteLocal += 30;
+                    if (currentMinuteLocal >= 60) {
+                        currentMinuteLocal = 0;
+                        currentHourLocal++;
+                    }
+                    continue;
+                }
 
-            currentMinute += 30;
-            if (currentMinute >= 60) {
-                currentMinute = 0;
-                currentHour++;
+                // דילוג על זמנים בתוך תקופת האילוצים, אם הוגדרו
+                if (!isStartNone && !isEndNone &&
+                        currentTotalMinutes >= constraintStartTotalMinutes &&
+                        currentTotalMinutes < constraintEndTotalMinutes) {
+                    currentMinuteLocal += 30;
+                    if (currentMinuteLocal >= 60) {
+                        currentMinuteLocal = 0;
+                        currentHourLocal++;
+                    }
+                    continue;
+                }
+
+                // יצירת זמני התחלה וסיום
+                String startTime = String.format("%02d:%02d", currentHourLocal, currentMinuteLocal);
+                int nextHour = nextTotalMinutes / 60;
+                int nextMinute = nextTotalMinutes % 60;
+                String endTime = String.format("%02d:%02d", nextHour, nextMinute);
+
+                // יצירת תור במצב "Available"
+                AppointmentModel appointment = new AppointmentModel(
+                        UUID.randomUUID().toString(),
+                        "",
+                        selectedDate,
+                        "",
+                        "Available",
+                        startTime,
+                        endTime,
+                        30
+                );
+                appointments.add(appointment);
+                schedule.append(startTime).append(" - ").append(endTime).append("\n");
+
+                currentMinuteLocal += 30;
+                if (currentMinuteLocal >= 60) {
+                    currentMinuteLocal = 0;
+                    currentHourLocal++;
+                }
             }
-        }
 
-        // Save appointments to Realtime Database
-        DateModel dateModel = new DateModel(selectedDate, "Work day");
-        dbRef.child(selectedDate).setValue(dateModel)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("Firebase", "Appointments saved for date: " + selectedDate);
-                    Toast.makeText(getContext(), "Schedule saved successfully!", Toast.LENGTH_SHORT).show();
-                    saveConstraintsButton.setVisibility(View.GONE);
-                    workDayOptionsLayout.setVisibility(View.GONE);
-                    selectedDateTextView.setText("Selected Date: " + selectedDate);
-
-                    //save only the appointments with unique IDs
+            // עדכון תורים תפוסים: אם קיים תור תפוס באותה שעת התחלה, מעדכנים את הפרטים שלו
+            if (occupiedAppointments != null) {
+                for (AppointmentModel occupiedAppointment : occupiedAppointments) {
+                    boolean exists = false;
                     for (AppointmentModel appointment : appointments) {
-                        // Generate a new unique ID for the appointment using push()
-                        String appointmentId = dbRef.child(selectedDate).child("appointments").push().getKey();
-
-                        // Update the appointment ID in the AppointmentModel
-                        appointment.setAppointmentId(appointmentId);
-
-                        // Save the updated appointment under the "appointments" node with the new unique ID
-                        dbRef.child(selectedDate).child("appointments").child(appointmentId).setValue(appointment)
-                                .addOnSuccessListener(aVoid1 -> {
-                                    Log.d("Firebase", "Appointment ID updated: " + appointmentId);
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("Firebase", "Error updating appointment ID", e);
-                                });
+                        if (occupiedAppointment.getStartTime().equals(appointment.getStartTime())) {
+                            // מעדכנים את פרטי התור עם המידע מהתור התפוס
+                            appointment.setAppointmentId(occupiedAppointment.getAppointmentId());
+                            appointment.setEmail(occupiedAppointment.getEmail());
+                            appointment.setDate(occupiedAppointment.getDate());
+                            appointment.setService(occupiedAppointment.getService());
+                            appointment.setStatus(occupiedAppointment.getStatus());
+                            appointment.setEndTime(occupiedAppointment.getEndTime());
+                            appointment.setDuration(occupiedAppointment.getDuration());
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        // Mark as canceled and send email in background thread
+                        occupiedAppointment.setStatus("Canceled");
+                        appointments.add(occupiedAppointment);
                     }
 
-                    Navigation.findNavController(saveConstraintsButton).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firebase", "Error saving appointments", e);
-                    Toast.makeText(getContext(), "Error saving schedule", Toast.LENGTH_SHORT).show();
-                });
+                }
+            } else {
+                Log.e("AdminConstraintsFragment", "occupiedAppointments is null.");
+            }
 
+            // שמירת לוח הזמנים למסד הנתונים
+            DateModel dateModel = new DateModel(selectedDate, "Work day", null);
+            dbRef.child(selectedDate).setValue(dateModel)
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("Firebase", "Appointments saved for date: " + selectedDate);
+                        Toast.makeText(getContext(), "Schedule saved successfully!", Toast.LENGTH_SHORT).show();
+                        saveConstraintsButton.setVisibility(View.GONE);
+                        workDayOptionsLayout.setVisibility(View.GONE);
+                        selectedDateTextView.setText("Selected Date: " + selectedDate);
+
+                        // שמירה של כל התורים עם מזהה ייחודי
+                        for (AppointmentModel appointment : appointments) {
+                            String appointmentId = dbRef.child(selectedDate).child("appointments").push().getKey();
+                            appointment.setAppointmentId(appointmentId);
+                            dbRef.child(selectedDate).child("appointments").child(appointmentId).setValue(appointment)
+                                    .addOnSuccessListener(aVoid1 -> {
+                                        Log.d("Firebase", "Appointment ID updated: " + appointmentId);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("Firebase", "Error updating appointment ID", e);
+                                    });
+                        }
+                        Navigation.findNavController(saveConstraintsButton)
+                                .navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Firebase", "Error saving appointments", e);
+                        Toast.makeText(getContext(), "Error saving schedule", Toast.LENGTH_SHORT).show();
+                    });
+        });
     }
+
 
     // Helper method to convert picker value to actual hour
     private int getActualHourFromConstraintPicker(NumberPicker hourPicker) {

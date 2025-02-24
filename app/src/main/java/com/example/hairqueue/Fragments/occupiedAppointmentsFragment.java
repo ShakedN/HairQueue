@@ -65,7 +65,7 @@ public class occupiedAppointmentsFragment extends Fragment {
 
                 occupiedAppointments.clear();
                 for (AppointmentModel appointment : allAppointments) {
-                    if (!"Available".equals(appointment.getStatus())) {
+                    if ("Occupied".equals(appointment.getStatus())) {
                         occupiedAppointments.add(appointment);
                     }
                 }
