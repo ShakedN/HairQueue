@@ -54,7 +54,6 @@ public class ClientHomeFragment extends Fragment {
     private DatabaseReference dbRef;
     private Button buttonBook;
     private ImageButton buttonProfile;
-
     private ImageButton buttonList;
     private ImageButton buttonLogout;
     ImageView greetingIcon;

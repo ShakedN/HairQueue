@@ -1,5 +1,7 @@
 package com.example.hairqueue.Adapters;
 
+import static java.security.AccessController.getContext;
+
 import com.example.hairqueue.Models.AppointmentModel;
 import com.example.hairqueue.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,8 +24,13 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.ViewHolder> {
     private List<AppointmentModel> appointments;
@@ -169,6 +176,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                     }
                 });
     }
+
 
     public void getAllAppointments(final OnCompleteListener<List<AppointmentModel>> listener) {
         List<AppointmentModel> allAppointments = new ArrayList<>();

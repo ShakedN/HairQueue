@@ -26,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 
@@ -34,7 +35,9 @@ public class ClientSetAppointmentFragment extends Fragment {
     private RecyclerView recyclerView;
     private AppointmentAdapter appointmentAdapter;
     private List<AppointmentModel> appointmentList = new ArrayList<>();
-    private TextView noAvailableAppointments;
+
+    private List<AppointmentModel> availableFutureAppointmentList = new ArrayList<>();
+    //private TextView noAvailableAppointments;
 
     private String selectedDate;
     private String selectedService;
@@ -90,7 +93,7 @@ public class ClientSetAppointmentFragment extends Fragment {
                     if (dayStatus == null || !"Work day".equals(dayStatus)) {
                         tvNoAppointments.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
-                        tvNoAppointments.setText("No available appointments on selected date");
+                        //tvNoAppointments.setText("No available appointments on selected date");
                     } else {
                         //if the selected date is a work day show the available appointments
                         AppointmentAdapter adapter = new AppointmentAdapter();
@@ -98,15 +101,30 @@ public class ClientSetAppointmentFragment extends Fragment {
                             if (task.isSuccessful()) {
                                 List<AppointmentModel> availableAppointments = task.getResult();
                                 if (availableAppointments != null && !availableAppointments.isEmpty()) {
-                                    appointmentAdapter.updateAppointments(availableAppointments);
-                                    tvNoAppointments.setVisibility(View.GONE); //hide message
-                                    recyclerView.setVisibility(View.VISIBLE); //show message
-                                } else {
-                                    tvNoAppointments.setVisibility(View.VISIBLE);
-                                    recyclerView.setVisibility(View.GONE);
-                                    tvNoAppointments.setText("No available appointments on selected date");
+                                    availableFutureAppointmentList = filterFutureAppointments(availableAppointments, selectedDate);
+                                    if (availableFutureAppointmentList != null && !availableFutureAppointmentList.isEmpty()){
+                                        appointmentAdapter.updateAppointments(availableFutureAppointmentList);
+
+                                    }
+                                    else {
+                                        tvNoAppointments.setVisibility(View.VISIBLE);
+                                        recyclerView.setVisibility(View.GONE);
+                                    }
                                 }
-                            } else {
+                            }
+
+
+
+                                //if (availableAppointments != null && !availableAppointments.isEmpty()) {
+                                    //appointmentAdapter.updateAppointments(availableAppointments);
+                                    //tvNoAppointments.setVisibility(View.GONE); //hide message
+                                   // recyclerView.setVisibility(View.VISIBLE); //show message
+                                //} else {
+                                   // tvNoAppointments.setVisibility(View.VISIBLE);
+                                   // recyclerView.setVisibility(View.GONE);
+                                    //tvNoAppointments.setText("No available appointments on selected date");
+                                //}
+                             else {
                                 Log.e("ClientSetAppointment", "Failed to fetch appointments", task.getException());
                             }
                         });
@@ -158,9 +176,6 @@ public class ClientSetAppointmentFragment extends Fragment {
             return;
         }
 
-        //Use the selectedService directly??
-        //String service = selectedService;
-
         //Update appointment details
         appointment.setStatus("Occupied");
         appointment.setEmail(userEmail);
@@ -186,7 +201,7 @@ public class ClientSetAppointmentFragment extends Fragment {
                                     .addOnSuccessListener(aVoid2 -> appointmentRef.child("service").setValue(selectedService)
                                             .addOnSuccessListener(aVoid3 -> {
                                                 // Add a toast to display the service
-                                                Toast.makeText(getContext(), "✅ Appointment successfully booked!\nService: " + selectedService, Toast.LENGTH_LONG).show();
+                                                //Toast.makeText(getContext(), "✅ Appointment successfully booked!\nService: " + selectedService, Toast.LENGTH_LONG).show();
                                                 appointmentAdapter.notifyDataSetChanged();
                                             })
                                             .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update service!", Toast.LENGTH_LONG).show())
@@ -199,29 +214,57 @@ public class ClientSetAppointmentFragment extends Fragment {
     }
 
 
+    public List<AppointmentModel> filterFutureAppointments(List<AppointmentModel> availableAppointments, String date) {
+        List<AppointmentModel> filteredAppointments = new ArrayList<>();
+        Calendar now = Calendar.getInstance();
 
+        try {
+            //Extract date
+            String[] dateParts = date.split("-");
+            Calendar appointmentDate = Calendar.getInstance();
+            appointmentDate.set(
+                    Integer.parseInt(dateParts[0]),
+                    Integer.parseInt(dateParts[1]) - 1,
+                    Integer.parseInt(dateParts[2])
+            );
 
+            //If the date didn't past - return all date's available appointments
+            if (appointmentDate.after(now)) {
+                return availableAppointments;
+            }
 
+            //If the date is the today - return only future available appointments of the date
+            if (isToday(appointmentDate)) {
+                for (AppointmentModel appointment : availableAppointments) {
+                    if (isTimeInFuture(appointment.getStartTime(), now)) {
+                        filteredAppointments.add(appointment);
+                    }
+                }
+                return filteredAppointments;
+            }
 
-//    private void saveAppointmentToUser(AppointmentModel appointment) {
-//        // קבלת המייל של המשתמש הנוכחי
-//        String userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-//
-//        // חילוץ מזהה המשתמש (החלק לפני ה-@)
-//        String userId = userEmail != null ? userEmail.split("@")[0] : "";
-//
-//        // נתיב הרשימה של התורים של המשתמש ב-Firebase
-//        DatabaseReference userAppointmentsRef = FirebaseDatabase.getInstance().getReference("users")
-//                .child(userId).child("appointments");
-//
-//        // הוספת התור תחת רשימת ה-appointments של המשתמש
-//        userAppointmentsRef.child(appointment.getAppointmentId()).setValue(appointment)
-//                .addOnSuccessListener(aVoid -> {
-//                    // עדכון הממשק לאחר הצלחה
-//                    Toast.makeText(getContext(), "Appointment saved under your profile", Toast.LENGTH_SHORT).show();
-//                })
-//                .addOnFailureListener(e -> {
-//                    Toast.makeText(getContext(), "Failed to save appointment", Toast.LENGTH_SHORT).show();
-//                });
-//    }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return filteredAppointments; //If the date has past return an empty list
+    }
+
+    private boolean isToday(Calendar appointmentDate) {
+        Calendar now = Calendar.getInstance();
+        return (now.get(Calendar.YEAR) == appointmentDate.get(Calendar.YEAR) &&
+                now.get(Calendar.MONTH) == appointmentDate.get(Calendar.MONTH) &&
+                now.get(Calendar.DAY_OF_MONTH) == appointmentDate.get(Calendar.DAY_OF_MONTH));
+    }
+
+    private boolean isTimeInFuture(String startTime, Calendar now) {
+        String[] timeParts = startTime.split(":");
+        int appointmentHour = Integer.parseInt(timeParts[0]);
+        int appointmentMinute = Integer.parseInt(timeParts[1]);
+
+        int currentHour = now.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = now.get(Calendar.MINUTE);
+
+        return (appointmentHour > currentHour || (appointmentHour == currentHour && appointmentMinute > currentMinute));
+    }
 }

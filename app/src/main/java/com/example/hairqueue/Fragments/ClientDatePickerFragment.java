@@ -34,6 +34,9 @@ public class ClientDatePickerFragment extends Fragment {
         calendarView = view.findViewById(R.id.calendarView);
         calendarView.setVisibility(View.GONE); // Hide the calendar initially
 
+        // Prevent selecting past dates by setting the minimum date to today's date
+        calendarView.setMinDate(System.currentTimeMillis());
+
         selectedDateTextView = view.findViewById(R.id.selectedDateTextView);
 
         // Set up RadioGroup listener

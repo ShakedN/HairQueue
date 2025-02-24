@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
+
             <ImageView
                 android:id="@+id/appLogo"
                 android:layout_width="80dp"
@@ -27,12 +28,13 @@
                 android:layout_marginLeft="0dp"
                 android:contentDescription="App Logo"
                 android:src="@drawable/logo" />
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
             <ImageButton
-                android:id="@+id/profileButton"
+                android:id="@+id/profileButtonApp"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="end"
@@ -40,7 +42,7 @@
                 android:contentDescription="profile"
                 android:src="@drawable/profile_icon" />
             <ImageButton
-                android:id="@+id/appointmentListButton"
+                android:id="@+id/appointmentListButtonApp"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="end"
@@ -48,7 +50,7 @@
                 android:contentDescription="list"
                 android:src="@drawable/list_icon" />
             <ImageButton
-                android:id="@+id/logoutButton"
+                android:id="@+id/logoutButtonApp"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="end"
@@ -62,7 +64,7 @@
 
         <!-- User Greeting -->
         <TextView
-            android:id="@+id/greetingTextView"
+            android:id="@+id/greetingTextViewApp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"

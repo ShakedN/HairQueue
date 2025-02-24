@@ -138,8 +138,11 @@
         android:label="fragment_client_appointments"
         tools:layout="@layout/fragment_client_appointments" >
         <action
-            android:id="@+id/action_clientAppointmentsFragment_to_clientHomeFragment"
-            app:destination="@id/clientHomeFragment" />
+            android:id="@+id/action_clientAppointmentsFragment_to_activityProfileFragment"
+            app:destination="@id/activityProfileFragment" />
+        <action
+            android:id="@+id/action_clientAppointmentsFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
     </fragment>
 
 </navigation>
