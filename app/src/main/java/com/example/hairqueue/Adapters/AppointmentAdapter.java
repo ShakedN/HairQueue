@@ -67,7 +67,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         AppointmentModel appointment = appointments.get(position);
 
-        holder.tvService.setText("Haircut");
+        holder.tvService.setText("Service: " + appointment.getService());
         holder.tvDate.setText("Date: " + appointment.getDate());
         holder.tvStartTime.setText("Start: " + appointment.getStartTime());
         holder.tvEndTime.setText("End: " + appointment.getEndTime());
@@ -145,6 +145,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                 });
     }
 
+
     public void getAvailableAppointmentsByDate(String date, final OnCompleteListener<List<AppointmentModel>> listener) {
         List<AppointmentModel> dateAppointments = new ArrayList<>();
         dbRef.child(date).child("appointments")
@@ -159,6 +160,7 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
                             }
                         }
                         listener.onComplete(Tasks.forResult(dateAppointments));
+
                         Log.d("AppointmentAdapter", "Available appointments for the date successfully fetched from Firebase!");
                     }
 
