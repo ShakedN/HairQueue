@@ -147,6 +147,9 @@ public class AdminConstraintsFragment extends Fragment {
                                             DataSnapshot dataSnapshot = task2.getResult();
                                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                                 String appointmentId = snapshot.getKey();
+                                                String email = snapshot.child("email").getValue(String.class);
+                                                String username=email.split("@")[0];
+                                                dbRef.child("users").child(username).child("appointments").child(appointmentId).child("status").setValue("Canceled");
                                                 dbRef.child(selectedDate).child("appointments").child(appointmentId).child("status").setValue("Canceled");
                                             }
                                         }
@@ -195,6 +198,9 @@ public class AdminConstraintsFragment extends Fragment {
                                         DataSnapshot dataSnapshot = task2.getResult();
                                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                             String appointmentId = snapshot.getKey();
+                                            String email = snapshot.child("email").getValue(String.class);
+                                            String username=email.split("@")[0];
+                                            dbRef.child("users").child(username).child("appointments").child(appointmentId).child("status").setValue("Canceled");
                                             dbRef.child(selectedDate).child("appointments").child(appointmentId).child("status").setValue("Canceled");
                                         }
                                     }
@@ -456,6 +462,13 @@ public class AdminConstraintsFragment extends Fragment {
                     }
                     if (!exists) {
                         // Mark as canceled and send email in background thread
+                        String email =occupiedAppointment.getEmail();
+                        String appointmentId=occupiedAppointment.getAppointmentId();
+                        String username=email.split("@")[0];
+                        DatabaseReference dbRefUser = FirebaseDatabase.getInstance().getReference();
+                        Toast.makeText(getContext(), "user:::"+username, Toast.LENGTH_SHORT).show();
+                        dbRefUser.child("users").child(username).child("appointments").child(appointmentId).child("status").setValue("Canceled");
+                        dbRef.child(selectedDate).child("appointments").child(appointmentId).child("status").setValue("Canceled");
                         occupiedAppointment.setStatus("Canceled");
                         appointments.add(occupiedAppointment);
                     }
