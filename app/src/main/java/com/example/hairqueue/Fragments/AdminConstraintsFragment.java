@@ -53,7 +53,6 @@ public class AdminConstraintsFragment extends Fragment {
         selectedDateTextView.setText("Selected Date: " + selectedDate);
         //DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
-        DatabaseReference appointmentsRef = FirebaseDatabase.getInstance().getReference("appointments");
 
         appointments = new ArrayList<>();
         occupiedAppointments = new ArrayList<>();
@@ -122,7 +121,7 @@ public class AdminConstraintsFragment extends Fragment {
 
                     // Handle Day Off Selection
                     if (checkedId == R.id.dayOffRadioButton) {
-                        if ("Sick day".equals(currentStatus) ) {
+                            if ("Sick day".equals(currentStatus) ) {
                             alertTitle.setText("Day Off Confirmation");
                             alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
                             alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
@@ -133,30 +132,32 @@ public class AdminConstraintsFragment extends Fragment {
                                 disableRadioGroup(dayTypeRadioGroup);
                                 alertDialog.dismiss();
                             });
-
+                            }
                             if("Work day".equals(currentStatus)){
                                 alertTitle.setText("Work day Confirmation");
                                 alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
                                 alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
                                 alertDialog.show();
 
+
                                 okButton.setOnClickListener(v -> {
+
                                     dbRef.child(selectedDate).child("appointments").get().addOnCompleteListener(task2 -> {
                                         if (task2.isSuccessful() && task2.getResult().exists()) {
-                                            for (DataSnapshot appointmentSnapshot : task.getResult().getChildren()) {
-                                                AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
-                                                if ("Available".equals(appointment.getStatus())) {
-                                                    dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off"));
-                                                }
-
+                                            DataSnapshot dataSnapshot = task2.getResult();
+                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                String appointmentId = snapshot.getKey();
+                                                dbRef.child(selectedDate).child("appointments").child(appointmentId).child("status").setValue("Canceled");
                                             }
                                         }
                                     });
+                                    dbRef.child(selectedDate).child("dateStatus").setValue("Day off");
+
                                     disableRadioGroup(dayTypeRadioGroup);
                                     alertDialog.dismiss();
                                 });
                             }
-                        } else {
+                         else {
                             if ("Day off".equals(currentStatus)) {
                                 alertDialog.dismiss();
                                 Toast.makeText(getContext(), "It is already a day off", Toast.LENGTH_LONG).show();
@@ -169,7 +170,7 @@ public class AdminConstraintsFragment extends Fragment {
 
                     // Handle Sick Day Selection
                     if (checkedId == R.id.sickDayRadioButton) {
-                        if ("Day off".equals(currentStatus) || "Work day".equals(currentStatus)) {
+                        if ("Day off".equals(currentStatus) ) {
                             alertTitle.setText("Sick Day Confirmation");
                             alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
                             alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
@@ -181,7 +182,29 @@ public class AdminConstraintsFragment extends Fragment {
                                 alertDialog.dismiss();
                             });
 
-                        } else {
+                        }
+                        if("Work day".equals(currentStatus)){
+                            alertTitle.setText("Day off Confirmation");
+                            alertMessage.setText("This day is marked as a " + currentStatus.toLowerCase() + ". Are you sure you want to change it?");
+                            alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+                            alertDialog.show();
+
+                            okButton.setOnClickListener(v -> {
+                                dbRef.child(selectedDate).child("appointments").get().addOnCompleteListener(task2 -> {
+                                    if (task2.isSuccessful() && task2.getResult().exists()) {
+                                        DataSnapshot dataSnapshot = task2.getResult();
+                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                            String appointmentId = snapshot.getKey();
+                                            dbRef.child(selectedDate).child("appointments").child(appointmentId).child("status").setValue("Canceled");
+                                        }
+                                    }
+                                });
+                                dbRef.child(selectedDate).child("dateStatus").setValue("Sick day");
+                                disableRadioGroup(dayTypeRadioGroup);
+                                alertDialog.dismiss();
+                            });
+                        }
+                        else {
                             alertDialog.dismiss();
                             Toast.makeText(getContext(), "It is already a sick day", Toast.LENGTH_LONG).show();
                         }
