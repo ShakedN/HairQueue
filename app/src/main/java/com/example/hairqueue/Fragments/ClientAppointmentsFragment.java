@@ -270,16 +270,20 @@ public class ClientAppointmentsFragment extends Fragment {
     //Function to update appointment's status to available on the date's appointments list
     private void updateAppointmentStatusInDates(AppointmentModel appointment) {
         DatabaseReference datesRef = FirebaseDatabase.getInstance().getReference("dates");
-        datesRef.child(appointment.getDate()).child("appointments").child(appointment.getAppointmentId())
-                .child("status").setValue("Available")
+        DatabaseReference appointmentRef = datesRef.child(appointment.getDate()).child("appointments").child(appointment.getAppointmentId());
+
+        //Update status and email on dates
+        appointmentRef.child("status").setValue("Available");
+        appointmentRef.child("email").setValue(" ")
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Log.d("ClientAppointments", "Appointment status updated to Available");
+                        Log.d("ClientAppointments", "Appointment status updated to Available and email cleared");
                     } else {
-                        Log.e("ClientAppointments", "Failed to update appointment status");
+                        Log.e("ClientAppointments", "Failed to update appointment status or email");
                     }
                 });
     }
+
     private void showCancelConfirmationDialog(AppointmentModel appointment) {
         // Inflate the custom layout
         LayoutInflater inflater = LayoutInflater.from(getContext());

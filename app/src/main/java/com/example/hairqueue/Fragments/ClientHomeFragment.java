@@ -224,15 +224,16 @@ public class ClientHomeFragment extends Fragment  {
         if (user == null) return;
 
         String userEmail = user.getEmail();
-        DatabaseReference appointmentsRef = FirebaseDatabase.getInstance().getReference("appointments");
+        String userName = userEmail.split("@")[0];
 
-        appointmentsRef.orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference appointmentsRef = FirebaseDatabase.getInstance().getReference("users").child(userName).child("appointments");
+
+        appointmentsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot appointmentSnapshot : snapshot.getChildren()) {
                     AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
                     if (appointment != null && "Canceled".equals(appointment.getStatus())) {
-                        Toast.makeText(getContext(), "Appointment Canceled", Toast.LENGTH_SHORT).show();
                         showCancellationDialog(appointment);
                     }
                 }
@@ -276,9 +277,33 @@ public class ClientHomeFragment extends Fragment  {
         cancelButton.setVisibility(View.GONE);
 
         // Set button click listener
-        okButton.setOnClickListener(v -> alertDialog.dismiss()
+        okButton.setOnClickListener(v -> {
+            cancelAppointment(appointment); // Call your function
+            alertDialog.dismiss();
+        });
+    }
 
-        );
+    private void cancelAppointment(AppointmentModel appointment) {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "User not logged in!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = currentUser.getEmail().split("@")[0]; //User's ID
+
+        DatabaseReference userAppointmentsRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("appointments");
+        userAppointmentsRef.child(appointment.getAppointmentId()).removeValue()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(getContext(), "Appointment canceled successfully", Toast.LENGTH_SHORT).show();
+                        //Delete appointment on the date's appointments list
+                        DatabaseReference dateAppointmentsRef = FirebaseDatabase.getInstance().getReference("dates").child(appointment.getDate()).child("appointments");
+                        dateAppointmentsRef.child(appointment.getAppointmentId()).removeValue();
+                    } else {
+                        Toast.makeText(getContext(), "Failed to cancel appointment", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
 
