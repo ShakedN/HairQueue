@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         String phone = ((EditText)findViewById(R.id.phone)).getText().toString();
         Log.d("result",email+" "+password);
 
-        if (fullName.isEmpty()  email.isEmpty()  password.isEmpty()  confirmPassword.isEmpty()  phone.isEmpty()) {
+        if (fullName.isEmpty()  ||email.isEmpty()  ||password.isEmpty()  ||confirmPassword.isEmpty() || phone.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_LONG).show();
             return;
         }
