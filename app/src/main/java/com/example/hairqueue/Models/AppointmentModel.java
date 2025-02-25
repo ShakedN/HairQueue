@@ -11,8 +11,6 @@ import com.google.firebase.database.ValueEventListener;
 
 public class AppointmentModel {
     private String adminAddress = "";  // Static variable to store the admin address
-
-
     String appointmentId;
     String email;
     String date;

@@ -37,7 +37,6 @@ public class ClientSetAppointmentFragment extends Fragment {
     private List<AppointmentModel> appointmentList = new ArrayList<>();
 
     private List<AppointmentModel> availableFutureAppointmentList = new ArrayList<>();
-    //private TextView noAvailableAppointments;
 
     private String selectedDate;
     private String selectedService;
@@ -55,17 +54,11 @@ public class ClientSetAppointmentFragment extends Fragment {
             selectedService = args.getString("selectedService"); // Retrieve the service
         }
 
-        Toast.makeText(getContext(), "Service: " + selectedService, Toast.LENGTH_LONG).show();
-
-        //show the selected date
-        Toast.makeText(getContext(), "Selected Date: " + selectedDate, Toast.LENGTH_SHORT).show();
-
         //RecyclerView connection
         recyclerView = view.findViewById(R.id.availableAppointmentsPickerRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         //Addapter creation
-        //List<AppointmentModel> appointmentList = new ArrayList<>(); App
         appointmentAdapter = new AppointmentAdapter(getContext(), appointmentList, appointment -> {
             if (appointment.getAppointmentId() == null || appointment.getAppointmentId().isEmpty()) {
                 Log.e("ClientSetAppointment", "Appointment ID is invalid");
@@ -88,13 +81,13 @@ public class ClientSetAppointmentFragment extends Fragment {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     String dayStatus = snapshot.getValue(String.class);
-
                     //if the selected date isn't a work day show a message
+
                     if (dayStatus == null || !"Work day".equals(dayStatus)) {
                         tvNoAppointments.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
-                        //tvNoAppointments.setText("No available appointments on selected date");
-                    } else {
+                    }
+                    else {
                         //if the selected date is a work day show the available appointments
                         AppointmentAdapter adapter = new AppointmentAdapter();
                         adapter.getAvailableAppointmentsByDate(selectedDate, task -> {
@@ -112,18 +105,6 @@ public class ClientSetAppointmentFragment extends Fragment {
                                     }
                                 }
                             }
-
-
-
-                                //if (availableAppointments != null && !availableAppointments.isEmpty()) {
-                                    //appointmentAdapter.updateAppointments(availableAppointments);
-                                    //tvNoAppointments.setVisibility(View.GONE); //hide message
-                                   // recyclerView.setVisibility(View.VISIBLE); //show message
-                                //} else {
-                                   // tvNoAppointments.setVisibility(View.VISIBLE);
-                                   // recyclerView.setVisibility(View.GONE);
-                                    //tvNoAppointments.setText("No available appointments on selected date");
-                                //}
                              else {
                                 Log.e("ClientSetAppointment", "Failed to fetch appointments", task.getException());
                             }
@@ -137,11 +118,8 @@ public class ClientSetAppointmentFragment extends Fragment {
                 }
             });
         }
-
         return view;
     }
-
-
     // update appointment on firebase
     private void bookAppointment(AppointmentModel appointment) {
         //Validate the user
@@ -150,7 +128,6 @@ public class ClientSetAppointmentFragment extends Fragment {
             Toast.makeText(getContext(), "User is not logged in or email is missing!", Toast.LENGTH_LONG).show();
            return;
        }
-
         String userEmail = user.getEmail();
         String userId = userEmail.substring(0, userEmail.indexOf("@"));
 
@@ -158,19 +135,16 @@ public class ClientSetAppointmentFragment extends Fragment {
             Toast.makeText(getContext(), "Extracted User ID is empty!", Toast.LENGTH_LONG).show();
             return;
         }
-
         //Validate the appointment
         if (appointment == null) {
             Toast.makeText(getContext(), "Appointment object is null!", Toast.LENGTH_LONG).show();
             return;
         }
-
         String appointmentId = appointment.getAppointmentId();
         if (appointmentId == null || appointmentId.isEmpty()) {
             Toast.makeText(getContext(), "Appointment ID is empty or invalid!", Toast.LENGTH_LONG).show();
             return;
         }
-
         if (appointment.getDate() == null || appointment.getStartTime() == null) {
             Toast.makeText(getContext(), "Date or time is missing!", Toast.LENGTH_LONG).show();
             return;
@@ -190,7 +164,6 @@ public class ClientSetAppointmentFragment extends Fragment {
                 "\nDate: " + appointment.getDate() +
                 "\nTime: " + appointment.getStartTime() +
                 "\nService: " + selectedService;
-        Toast.makeText(getContext(), appointmentDetails, Toast.LENGTH_LONG).show();
 
         //Save the appointment in Firebase (in both locations)
         userRef.setValue(appointment)
@@ -200,8 +173,7 @@ public class ClientSetAppointmentFragment extends Fragment {
                             .addOnSuccessListener(aVoid1 -> appointmentRef.child("email").setValue(userEmail)
                                     .addOnSuccessListener(aVoid2 -> appointmentRef.child("service").setValue(selectedService)
                                             .addOnSuccessListener(aVoid3 -> {
-                                                // Add a toast to display the service
-                                                //Toast.makeText(getContext(), "✅ Appointment successfully booked!\nService: " + selectedService, Toast.LENGTH_LONG).show();
+                                                Toast.makeText(getContext(), "✅ Appointment successfully booked!\nService: " + selectedService, Toast.LENGTH_LONG).show();
                                                 appointmentAdapter.notifyDataSetChanged();
                                             })
                                             .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update service!", Toast.LENGTH_LONG).show())

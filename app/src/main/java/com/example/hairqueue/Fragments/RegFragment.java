@@ -64,28 +64,23 @@ public class RegFragment extends Fragment {
                 String pass1 = password1.getText().toString();
                 String pass2 = password2.getText().toString();
 
-                // בדיקה אם הסיסמאות תואמות
+                // check if the passwords match
                 if (pass1.equals(pass2)) {
                     if(pass1.length()<6) {
                         Toast.makeText(getContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
 
                     }
                     else{
-                        // הסיסמאות תואמות - אפשר להמשיך עם הרישום
+                        // passwords match-continue registration
                         MainActivity mainActivity = (MainActivity) getActivity();
-                        mainActivity.reg(v); // הרישום ב-activity
-                        mainActivity.addDATA(); // הוספת הנתונים למערכת
+                        mainActivity.reg(v);
+                        mainActivity.addDATA();
                     }
                 }
                 else {
-                    // הסיסמאות לא תואמות - הצגת הודעת שגיאה
                     Toast.makeText(getContext(), "Passwords do not match", Toast.LENGTH_SHORT).show();
                 }
             }
-
-
-
-
         });
         return view;}
 }

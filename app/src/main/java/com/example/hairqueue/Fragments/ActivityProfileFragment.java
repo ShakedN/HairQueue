@@ -109,7 +109,8 @@ public class ActivityProfileFragment extends Fragment {
             boolean isEditable = phoneEditText.isEnabled();
 
             if (isEditable) {
-                // מצב שמירה - בדיקה אם השדות מלאים
+                //checked if user details exist
+
                 String fullName = fullNameEditText.getText().toString().trim();
                 String phone = phoneEditText.getText().toString().trim();
 
@@ -123,7 +124,7 @@ public class ActivityProfileFragment extends Fragment {
                 phoneEditText.setEnabled(false);
                 editProfileButton.setText("Edit");
             } else {
-                // מצב עריכה
+                // edit mode
                 fullNameEditText.setEnabled(true); // לא מאפשרים לשנות שם
                 phoneEditText.setEnabled(true);
                 editProfileButton.setText("Save");
@@ -135,11 +136,12 @@ public class ActivityProfileFragment extends Fragment {
     }
 
 
-    // פונקציה לשמירת הנתונים ב-Firebase
+   // Function to save data in the firebase
     private void saveUserData(String fullName, String phone) {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String userId = currentUser.getEmail().split("@")[0];; // יצירת UID לפי המייל
+            // Get the user ID from the email: shnuttman@gmail.com -shnuttman
+            String userId = currentUser.getEmail().split("@")[0];;
 
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
             userRef.child("fullName").setValue(fullName);

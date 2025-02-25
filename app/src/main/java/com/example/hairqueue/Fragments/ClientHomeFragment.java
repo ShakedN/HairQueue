@@ -102,7 +102,6 @@ public class ClientHomeFragment extends Fragment  {
         buttonBook.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle the button click event here
                 Toast.makeText(getContext(), "Book Appointment", Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(view).navigate(R.id.action_clientHomeFragment_to_clientDatePickerFragment);
             }
@@ -137,7 +136,6 @@ public class ClientHomeFragment extends Fragment  {
         getUserName();
         updateCanceledAppointments();
 
-        String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         loadAvailableTodayAppointments();
         return view;
     }

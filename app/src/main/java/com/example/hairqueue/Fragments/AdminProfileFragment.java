@@ -84,7 +84,7 @@ public class AdminProfileFragment extends Fragment {
                                 fullNameAdminEditText.setText(fullName != null ? fullName : "No Name");
                                 emailAdminEditText.setText(email != null ? email : "No Email");
                                 phoneAdminEditText.setText(phone != null ? phone : "No Phone");
-                                addressAdminEditText.setText(address != null ? address : "No Adress");
+                                addressAdminEditText.setText(address != null ? address : "No Address");
                             }
                         } else {
                             // Show a toast message if user data is not found
@@ -153,7 +153,7 @@ public class AdminProfileFragment extends Fragment {
     private void saveAdminData(String fullName, String phone, String address) {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String userId = currentUser.getEmail().split("@")[0];; // יצירת UID לפי המייל
+            String userId = currentUser.getEmail().split("@")[0];; //create userId from email
 
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(userId);
             userRef.child("fullName").setValue(fullName);

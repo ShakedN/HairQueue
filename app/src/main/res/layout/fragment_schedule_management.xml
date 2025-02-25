@@ -25,9 +25,6 @@
                 android:contentDescription="App Logo"
                 android:src="@drawable/logo" />
         </LinearLayout>
-
-
-
         <!-- Calendar in a CardView -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -36,7 +33,6 @@
             app:cardElevation="4dp"
             android:layout_marginBottom="16dp"
             android:background="@android:color/white">
-
             <CalendarView
                 android:id="@+id/calendarView"
                 android:layout_width="match_parent"

@@ -156,7 +156,7 @@ public class AdminHomeFragment extends Fragment {
                 // Notify the adapter to update UI
                 appointmentAdapter.notifyDataSetChanged();
 
-                //Toast.makeText(getContext(), "Loaded 5 closest available/occupied appointments.", Toast.LENGTH_SHORT).show();
+
             } else {
                 Toast.makeText(getContext(), "Error loading appointments.", Toast.LENGTH_SHORT).show();
             }

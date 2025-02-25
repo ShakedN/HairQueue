@@ -36,16 +36,6 @@ public class LoginFragment extends Fragment {
     public LoginFragment() {
         // Required empty public constructor
     }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment LoginFregment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static LoginFragment newInstance(String param1, String param2,String email,String full_Name) {
         LoginFragment fragment = new LoginFragment();
         Bundle args = new Bundle();
@@ -77,7 +67,7 @@ public class LoginFragment extends Fragment {
         Button button1 = view.findViewById(R.id.buttonRegister);
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {// v-> button , view->layout
+            public void onClick(View v) {
                 Navigation.findNavController(v).navigate(R.id.action_loginFregment_to_regFregment);
 
             }
@@ -88,9 +78,7 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 MainActivity mainActivity =(MainActivity) getActivity();
-
                 mainActivity.login(v,emailAdmin,passwordAdmin);
-                //Navigation.findNavController(v).navigate(R.id.action_fragmentOne_to_fragmentthree);
             }
 
 

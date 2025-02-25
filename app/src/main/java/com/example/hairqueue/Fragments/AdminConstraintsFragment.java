@@ -64,6 +64,9 @@ public class AdminConstraintsFragment extends Fragment {
         saveConstraintsButton = view.findViewById(R.id.saveButton);
         // Set up RadioGroup listener
         RadioGroup dayTypeRadioGroup = view.findViewById(R.id.dayTypeRadioGroup);
+
+        //radio button selection date type
+
         dayTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             DatabaseReference selectedDateRef = dbRef.child(selectedDate);
             selectedDateRef.child("dateStatus").get().addOnCompleteListener(task -> {
@@ -238,7 +241,6 @@ public class AdminConstraintsFragment extends Fragment {
                         workDayOptionsLayout.setVisibility(View.VISIBLE);
                         Log.d("Firebase", "Work day open options");
                         disableRadioGroup(dayTypeRadioGroup);
-                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
 
 
 
@@ -322,6 +324,7 @@ public class AdminConstraintsFragment extends Fragment {
         minutePicker.setWrapSelectorWheel(true);
     }
 
+    //saveConstraints()- save the constraints to the database
     private void saveConstraints(NumberPicker startHourPicker, NumberPicker startMinutePicker,
                                  NumberPicker endHourPicker, NumberPicker endMinutePicker,
                                  NumberPicker lunchStartHourPicker, NumberPicker lunchStartMinutePicker,
@@ -379,14 +382,14 @@ public class AdminConstraintsFragment extends Fragment {
         final String selectedDate = selectedDateTextView.getText().toString().replace("Selected Date: ", "").trim();
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("dates");
 
-        // טוענים את התורים הקיימים עבור התאריך הנבחר
+        // Load all appointments for the selected date
         appointmentAdapter.getAppointmentsByDate(selectedDate, task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 List<AppointmentModel> allAppointments = task.getResult();
                 if (allAppointments == null) {
                     allAppointments = new ArrayList<>();
                 }
-                // נעדכן את רשימת התורים התפוסים
+                // Filter occupied appointments
                 occupiedAppointments.clear();
                 for (AppointmentModel appointment : allAppointments) {
                     if ("Occupied".equals(appointment.getStatus())) {
@@ -397,7 +400,7 @@ public class AdminConstraintsFragment extends Fragment {
                 Log.w("AppointmentAdapter", "There is no passed appointments.", task.getException());
             }
 
-            // כעת, אחרי שטענו את התורים הקיימים, ניצור את לוח הזמנים החדש
+           //reset the appointments list
             appointments.clear();
             StringBuilder schedule = new StringBuilder();
             int currentHourLocal = startHour;
@@ -407,7 +410,7 @@ public class AdminConstraintsFragment extends Fragment {
                 int currentTotalMinutes = (currentHourLocal * 60) + currentMinuteLocal;
                 int nextTotalMinutes = currentTotalMinutes + 30;
 
-                // דילוג על זמנים בתוך הפסקת צהריים
+               //skip lunch break
                 if (currentTotalMinutes >= lunchStartTotalMinutes && currentTotalMinutes < lunchEndTotalMinutes) {
                     currentMinuteLocal += 30;
                     if (currentMinuteLocal >= 60) {
@@ -417,7 +420,7 @@ public class AdminConstraintsFragment extends Fragment {
                     continue;
                 }
 
-                // דילוג על זמנים בתוך תקופת האילוצים, אם הוגדרו
+               //skip constraints
                 if (!isStartNone && !isEndNone &&
                         currentTotalMinutes >= constraintStartTotalMinutes &&
                         currentTotalMinutes < constraintEndTotalMinutes) {
@@ -429,13 +432,13 @@ public class AdminConstraintsFragment extends Fragment {
                     continue;
                 }
 
-                // יצירת זמני התחלה וסיום
+                //declare the start and end time of the appointment
                 String startTime = String.format("%02d:%02d", currentHourLocal, currentMinuteLocal);
                 int nextHour = nextTotalMinutes / 60;
                 int nextMinute = nextTotalMinutes % 60;
                 String endTime = String.format("%02d:%02d", nextHour, nextMinute);
 
-                // יצירת תור במצב "Available"
+                //create available appointment
                 AppointmentModel appointment = new AppointmentModel(
                         UUID.randomUUID().toString(),
                         "",
@@ -456,13 +459,13 @@ public class AdminConstraintsFragment extends Fragment {
                 }
             }
 
-            // עדכון תורים תפוסים: אם קיים תור תפוס באותה שעת התחלה, מעדכנים את הפרטים שלו
+            //combine the occupied and available appointments
             if (occupiedAppointments != null) {
                 for (AppointmentModel occupiedAppointment : occupiedAppointments) {
                     boolean exists = false;
                     for (AppointmentModel appointment : appointments) {
                         if (occupiedAppointment.getStartTime().equals(appointment.getStartTime())) {
-                            // מעדכנים את פרטי התור עם המידע מהתור התפוס
+                            // Copy the occupied appointment to the available list
                             appointment.setAppointmentId(occupiedAppointment.getAppointmentId());
                             appointment.setEmail(occupiedAppointment.getEmail());
                             appointment.setDate(occupiedAppointment.getDate());
@@ -492,7 +495,7 @@ public class AdminConstraintsFragment extends Fragment {
                 Log.e("AdminConstraintsFragment", "occupiedAppointments is null.");
             }
 
-            // שמירת לוח הזמנים למסד הנתונים
+            // Saved the schedule to the firebase
             DateModel dateModel = new DateModel(selectedDate, "Work day", null);
             dbRef.child(selectedDate).setValue(dateModel)
                     .addOnSuccessListener(aVoid -> {
@@ -502,7 +505,7 @@ public class AdminConstraintsFragment extends Fragment {
                         workDayOptionsLayout.setVisibility(View.GONE);
                         selectedDateTextView.setText("Selected Date: " + selectedDate);
 
-                        // שמירה של כל התורים עם מזהה ייחודי
+                        // saved all appointments with uuid
                         for (AppointmentModel appointment : appointments) {
                             String appointmentId = dbRef.child(selectedDate).child("appointments").push().getKey();
                             appointment.setAppointmentId(appointmentId);

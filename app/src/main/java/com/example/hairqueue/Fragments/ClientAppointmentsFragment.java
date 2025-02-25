@@ -133,12 +133,10 @@ public class ClientAppointmentsFragment extends Fragment {
                 prevAppointments.clear();
                 upcomingAppointments.clear();
                 long currentTime = System.currentTimeMillis();
-                //Toast.makeText(getContext(), "time:" + currentTime, Toast.LENGTH_LONG).show();
 
                 for (DataSnapshot appointmentSnapshot : snapshot.getChildren()) {
                     AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
                     if (appointment != null) {
-                        //long appointmentTime = getAppointmentTimestamp(appointment.getDate(), appointment.getStartTime());
                         if (isPastDateTime(appointment.getDate(), appointment.getStartTime())) {
                             prevAppointments.add(appointment);
                         } else {
@@ -158,16 +156,7 @@ public class ClientAppointmentsFragment extends Fragment {
         });
     }
 
-    //private long getAppointmentTimestamp(String date, String time) {
-    //try {
-    //SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-    //Date parsedDate = sdf.parse(date + " " + time);
-    // return parsedDate != null ? parsedDate.getTime() : 0;
-    // } catch (ParseException e) {
-    //  e.printStackTrace();
-    //  return 0;
-    //}
-    //}
+
 
     private void getUserName() {
         FirebaseUser user = mAuth.getCurrentUser();
@@ -181,7 +170,6 @@ public class ClientAppointmentsFragment extends Fragment {
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("fullName");
 
-        //Toast.makeText(getContext(), "🔎 Fetching name for user ID: " + userId, Toast.LENGTH_LONG).show();
 
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -196,7 +184,6 @@ public class ClientAppointmentsFragment extends Fragment {
                     fullName = "User";
                 }
 
-                Toast.makeText(getContext(), "Retrieved full name: " + fullName, Toast.LENGTH_LONG).show();
 
                 if (greetingTextView != null) {
                     greetingTextView.setText("Hello " + fullName + "!");
@@ -318,7 +305,7 @@ public class ClientAppointmentsFragment extends Fragment {
 
         // Confirm Button - Cancel Appointment
         confirmButton.setOnClickListener(v -> {
-            cancelAppointment(appointment); // Call your function
+            cancelAppointment(appointment);
             alertDialog.dismiss();
         });
 
