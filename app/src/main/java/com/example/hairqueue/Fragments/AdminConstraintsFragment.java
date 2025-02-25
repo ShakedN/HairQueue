@@ -131,6 +131,8 @@ public class AdminConstraintsFragment extends Fragment {
                                 dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
                                 disableRadioGroup(dayTypeRadioGroup);
                                 alertDialog.dismiss();
+                                Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
                             });
                             }
                             if("Work day".equals(currentStatus)){
@@ -157,6 +159,8 @@ public class AdminConstraintsFragment extends Fragment {
                                     dbRef.child(selectedDate).child("dateStatus").setValue("Day off");
                                     disableRadioGroup(dayTypeRadioGroup);
                                     alertDialog.dismiss();
+                                    Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
                                 });
                             }
 
@@ -165,6 +169,8 @@ public class AdminConstraintsFragment extends Fragment {
                                 Toast.makeText(getContext(), "It is already a day off", Toast.LENGTH_LONG).show();
                                 disableRadioGroup(dayTypeRadioGroup);
                                 alertDialog.dismiss();
+                                Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
                             }
                         }
 
@@ -181,6 +187,8 @@ public class AdminConstraintsFragment extends Fragment {
                                 dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Sick day", null));
                                 disableRadioGroup(dayTypeRadioGroup);
                                 alertDialog.dismiss();
+                                Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
                             });
 
                         }
@@ -212,7 +220,8 @@ public class AdminConstraintsFragment extends Fragment {
                                 alertDialog.dismiss();
                                 disableRadioGroup(dayTypeRadioGroup);
                                 Toast.makeText(getContext(), "It is already a sick day", Toast.LENGTH_LONG).show();
-                        }
+                                Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+                            }
                     }
                 } else {
                     if(checkedId == R.id.sickDayRadioButton)
@@ -220,6 +229,8 @@ public class AdminConstraintsFragment extends Fragment {
                         dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Sick day", null));
                         Toast.makeText(getContext(), "Sick day saved successfully!", Toast.LENGTH_SHORT).show();
                         disableRadioGroup(dayTypeRadioGroup);
+                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
                     }
                     if(checkedId==R.id.workDayRadioButton){
                         dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Work day", null));
@@ -227,6 +238,8 @@ public class AdminConstraintsFragment extends Fragment {
                         workDayOptionsLayout.setVisibility(View.VISIBLE);
                         Log.d("Firebase", "Work day open options");
                         disableRadioGroup(dayTypeRadioGroup);
+                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
 
 
                     }
@@ -234,6 +247,8 @@ public class AdminConstraintsFragment extends Fragment {
                         dbRef.child(selectedDate).setValue(new DateModel(selectedDate, "Day off", null));
                         Toast.makeText(getContext(),"Day off saved successfully!",Toast.LENGTH_SHORT).show();
                         disableRadioGroup(dayTypeRadioGroup);
+                        Navigation.findNavController(view).navigate(R.id.action_adminFragmentConstraints_to_adminHomeFragment);
+
 
                     }
                 }

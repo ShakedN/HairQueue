@@ -26,14 +26,7 @@
                 android:src="@drawable/logo" />
         </LinearLayout>
 
-        <!-- Logo Icon -->
-        <ImageView
-            android:id="@+id/logoIcon"
-            android:layout_width="230dp"
-            android:layout_height="82dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/logo" />
+
 
         <!-- Calendar in a CardView -->
         <androidx.cardview.widget.CardView

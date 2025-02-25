@@ -13,7 +13,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -100,15 +102,7 @@ public class ClientAppointmentsFragment extends Fragment {
                 return;
             }
 
-            // יצירת הדיאלוג
-            new AlertDialog.Builder(getContext())
-                    .setTitle("Cancel Appointment")
-                    .setMessage("Are you sure you want to cancel this appointment?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        cancelAppointment(appointment); //Cancle Appointment
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
+            showCancelConfirmationDialog(appointment);
 
 
         });
@@ -286,6 +280,48 @@ public class ClientAppointmentsFragment extends Fragment {
                     }
                 });
     }
+    private void showCancelConfirmationDialog(AppointmentModel appointment) {
+        // Inflate the custom layout
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        View view = inflater.inflate(R.layout.custom_alert_dialog, null); // Ensure the XML file exists
+
+        // Find views in the inflated layout
+        TextView alertTitle = view.findViewById(R.id.alertTitle);
+        TextView alertMessage = view.findViewById(R.id.alertMessage);
+        ImageView alertIcon = view.findViewById(R.id.alertIcon);
+        Button confirmButton = view.findViewById(R.id.btnConfirm);
+        Button cancelButton = view.findViewById(R.id.btnCancel);
+
+        // Set custom text
+        alertTitle.setText("Cancel Appointment");
+        alertMessage.setText("Are you sure you want to cancel this appointment?");
+
+        // Set alert icon
+        alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+
+        // Create AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setView(view);
+        AlertDialog alertDialog = builder.create();
+
+        // Make background transparent if needed
+        if (alertDialog.getWindow() != null) {
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // Show the dialog
+        alertDialog.show();
+
+        // Confirm Button - Cancel Appointment
+        confirmButton.setOnClickListener(v -> {
+            cancelAppointment(appointment); // Call your function
+            alertDialog.dismiss();
+        });
+
+        // Cancel Button - Dismiss Dialog
+        cancelButton.setOnClickListener(v -> alertDialog.dismiss());
+    }
+
 
 
 }

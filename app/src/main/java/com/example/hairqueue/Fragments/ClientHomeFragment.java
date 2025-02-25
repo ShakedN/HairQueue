@@ -61,6 +61,8 @@ public class ClientHomeFragment extends Fragment  {
     private ImageButton buttonLogout;
     TextView tvNoAppointments;
     ImageView greetingIcon;
+    private List<AppointmentModel> appointments;
+
 
     public ClientHomeFragment() {
         // Required empty public constructor
@@ -82,6 +84,7 @@ public class ClientHomeFragment extends Fragment  {
         recyclerView = view.findViewById(R.id.rvAvailableAppointments);
         greetingIcon = view.findViewById(R.id.greetingIcon);
         tvNoAppointments = view.findViewById(R.id.tvNoAppointments);
+        View view2 = inflater.inflate(R.layout.custom_alert_dialog, container, false);
 
 
         // Initialize the appointments list
@@ -135,7 +138,7 @@ public class ClientHomeFragment extends Fragment  {
         updateCanceledAppointments();
 
         String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        loadAvailableTodayAppointments(todayDate);
+        loadAvailableTodayAppointments();
         return view;
     }
 
@@ -215,7 +218,7 @@ public class ClientHomeFragment extends Fragment  {
         }
     }
 
-    private void updateCanceledAppointments() {
+    private void updateCanceledAppointments( ) {
         Log.d("DEBUG", "updateCanceledAppointments called");
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) return;
@@ -229,6 +232,7 @@ public class ClientHomeFragment extends Fragment  {
                 for (DataSnapshot appointmentSnapshot : snapshot.getChildren()) {
                     AppointmentModel appointment = appointmentSnapshot.getValue(AppointmentModel.class);
                     if (appointment != null && "Canceled".equals(appointment.getStatus())) {
+                        Toast.makeText(getContext(), "Appointment Canceled", Toast.LENGTH_SHORT).show();
                         showCancellationDialog(appointment);
                     }
                 }
@@ -241,45 +245,152 @@ public class ClientHomeFragment extends Fragment  {
         });
     }
     private void showCancellationDialog(AppointmentModel appointment) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Appointment Canceled")
-                .setMessage("Your appointment on " + appointment.getDate() + " at " + appointment.getStartTime() + " has been canceled.")
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .setCancelable(false) // מונע סגירה בלחיצה מחוץ לדיאלוג
-                .show();
+        // Inflate the custom layout
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        View view2 = inflater.inflate(R.layout.custom_alert_dialog, null); // Ensure the correct layout file
+
+        // Find views in the inflated layout
+        TextView alertTitle = view2.findViewById(R.id.alertTitle);
+        TextView alertMessage = view2.findViewById(R.id.alertMessage);
+        ImageView alertIcon = view2.findViewById(R.id.alertIcon);
+        Button okButton = view2.findViewById(R.id.btnConfirm);
+        Button cancelButton = view2.findViewById(R.id.btnCancel);
+
+        // Set up AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setView(view2);
+        AlertDialog alertDialog = builder.create();
+
+        // Set background transparent if needed
+        if (alertDialog.getWindow() != null) {
+            alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        Toast.makeText(getContext(),"Appointment Canceled",Toast.LENGTH_SHORT).show();
+        // Show dialog
+        alertDialog.show();
+
+        // Set dialog content
+        alertTitle.setText("Appointment Canceled");
+        alertMessage.setText("Your appointment on " + appointment.getDate() + " at " + appointment.getStartTime() + " has been canceled.");
+        alertIcon.setImageResource(android.R.drawable.ic_dialog_alert);
+        cancelButton.setVisibility(View.GONE);
+
+        // Set button click listener
+        okButton.setOnClickListener(v -> alertDialog.dismiss()
+
+        );
     }
 
 
 
 
-    private void loadAvailableTodayAppointments(String date) {
-        appointmentAdapter.getAvailableAppointmentsByDate(date, task -> {
-            if (task.isSuccessful()) {
-                // אם יש תורים זמינים
-                List<AppointmentModel> availableAppointments = task.getResult();
-                if (availableAppointments != null && !availableAppointments.isEmpty()) {
-                    // אם יש תורים פנויים, נסיר את הודעת "אין תורים פנויים"
-                    tvNoAppointments.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
 
-                    // עדכון הרשימה והפונקציה של ה-Adapter
-                    appointmentList.clear();
-                    appointmentList.addAll(availableAppointments);
-                    appointmentAdapter.notifyDataSetChanged();
-                } else {
-                    // אם אין תורים פנויים, נציג את הודעת "אין תורים פנויים"
-                    tvNoAppointments.setVisibility(View.VISIBLE);
-                    recyclerView.setVisibility(View.GONE);
+    private void loadAvailableTodayAppointments() {
+        // Use the same list used by the adapter
+        if (appointmentList == null) {
+            appointmentList = new ArrayList<>();
+        }
+
+        // Use a format without zero-padding to match Firebase (e.g., "2025-2-25")
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-M-d", Locale.getDefault());
+        String todayDate = sdf.format(new Date());
+        Log.d("DEBUG", "Today's normalized date: " + todayDate);
+
+        // Get current time in minutes (e.g., if it's 14:30, then 14*60+30 = 870 minutes)
+        Calendar now = Calendar.getInstance();
+        int currentHour = now.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = now.get(Calendar.MINUTE);
+        int currentTimeInMinutes = currentHour * 60 + currentMinute;
+        Log.d("DEBUG", "Current time in minutes: " + currentTimeInMinutes);
+
+        // Fetch all appointments from Firebase using the adapter's method
+        appointmentAdapter.getAllAppointments(task -> {
+            if (task.isSuccessful()) {
+                List<AppointmentModel> allAppointments = task.getResult();
+                if (allAppointments == null) {
+                    allAppointments = new ArrayList<>();
                 }
+                Log.d("DEBUG", "Total appointments fetched: " + allAppointments.size());
+
+                // Filter only today's available appointments that start after now
+                List<AppointmentModel> filteredAppointments = new ArrayList<>();
+                for (AppointmentModel appointment : allAppointments) {
+                    try {
+                        // Debug log for each appointment
+                        Log.d("DEBUG", "Appointment retrieved - Date: " + appointment.getDate() +
+                                ", Status: " + appointment.getStatus() +
+                                ", Start Time: " + appointment.getStartTime());
+
+                        // Ensure appointment date, status, and start time are not null
+                        if (appointment.getDate() != null && appointment.getStatus() != null && appointment.getStartTime() != null) {
+                            // Normalize the appointment date (assuming it's stored as "yyyy-M-d", e.g. "2025-2-25")
+                            String appointmentDate = appointment.getDate().trim();
+                            // Check if the appointment is for today and status is "Available"
+                            if (appointmentDate.equals(todayDate) &&
+                                    appointment.getStatus().equalsIgnoreCase("Available")) {
+
+                                // Parse the appointment's start time (expected format "HH:mm")
+                                String[] timeParts = appointment.getStartTime().split(":");
+                                int appHour = Integer.parseInt(timeParts[0]);
+                                int appMinute = Integer.parseInt(timeParts[1]);
+                                int appTimeInMinutes = appHour * 60 + appMinute;
+
+                                // Only add the appointment if it starts at or after the current time
+                                if (appTimeInMinutes >= currentTimeInMinutes) {
+                                    filteredAppointments.add(appointment);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("DEBUG", "Total filtered (today's available starting after now): " + filteredAppointments.size());
+
+                // Sort the filtered appointments by start time (earliest first)
+                filteredAppointments.sort((a1, a2) -> {
+                    try {
+                        String[] time1Parts = a1.getStartTime().split(":");
+                        String[] time2Parts = a2.getStartTime().split(":");
+
+                        int hour1 = Integer.parseInt(time1Parts[0]);
+                        int minute1 = Integer.parseInt(time1Parts[1]);
+                        int hour2 = Integer.parseInt(time2Parts[0]);
+                        int minute2 = Integer.parseInt(time2Parts[1]);
+
+                        return Integer.compare(hour1 * 60 + minute1, hour2 * 60 + minute2);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return 0;
+                    }
+                });
+
+                // Update the adapter's list and UI
+                appointmentList.clear();
+                int count = Math.min(5, filteredAppointments.size());
+                if (count > 0) {
+                    appointmentList.addAll(filteredAppointments.subList(0, count));
+                    recyclerView.setVisibility(View.VISIBLE);
+                    tvNoAppointments.setVisibility(View.GONE);
+                } else {
+                    recyclerView.setVisibility(View.GONE);
+                    tvNoAppointments.setVisibility(View.VISIBLE);
+                }
+                appointmentAdapter.notifyDataSetChanged();
             } else {
-                // אם קרה שגיאה, טיפול בשגיאה
-                tvNoAppointments.setVisibility(View.VISIBLE);
-                recyclerView.setVisibility(View.GONE);
-                // הצגת הודעת שגיאה
-                Toast.makeText(getContext(), "Error loading appointments", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Error loading appointments.", Toast.LENGTH_SHORT).show();
+                Log.e("DEBUG", "Error fetching appointments: ", task.getException());
             }
         });
     }
+
+
+
+
+
+
+
+
 
 
 

@@ -85,8 +85,8 @@ public class AdminHomeFragment extends Fragment {
                     allAppointments = new ArrayList<>();
                 }
 
-                // Filter out past appointments
-                List<AppointmentModel> upcomingAppointments = new ArrayList<>();
+                // Filter upcoming appointments based on status
+                List<AppointmentModel> filteredAppointments = new ArrayList<>();
                 for (AppointmentModel appointment : allAppointments) {
                     try {
                         // Parse appointment date and time
@@ -102,9 +102,11 @@ public class AdminHomeFragment extends Fragment {
                                 Integer.parseInt(timeParts[1])
                         );
 
-                        // Add only future appointments
-                        if (appointmentTime.getTimeInMillis() >= currentTimeMillis) {
-                            upcomingAppointments.add(appointment);
+                        // Check if appointment is in the future AND has the correct status
+                        if (appointmentTime.getTimeInMillis() >= currentTimeMillis &&
+                                (appointment.getStatus().equalsIgnoreCase("Available") ||
+                                        appointment.getStatus().equalsIgnoreCase("Occupied"))) {
+                            filteredAppointments.add(appointment);
                         }
 
                     } catch (Exception e) {
@@ -112,8 +114,8 @@ public class AdminHomeFragment extends Fragment {
                     }
                 }
 
-                // Sort upcoming appointments by date & time (nearest first)
-                upcomingAppointments.sort((a1, a2) -> {
+                // Sort appointments by date & time (nearest first)
+                filteredAppointments.sort((a1, a2) -> {
                     try {
                         Calendar time1 = Calendar.getInstance();
                         Calendar time2 = Calendar.getInstance();
@@ -149,15 +151,16 @@ public class AdminHomeFragment extends Fragment {
 
                 // Take only the nearest 5 appointments
                 appointments.clear();
-                appointments.addAll(upcomingAppointments.subList(0, Math.min(5, upcomingAppointments.size())));
+                appointments.addAll(filteredAppointments.subList(0, Math.min(5, filteredAppointments.size())));
 
                 // Notify the adapter to update UI
                 appointmentAdapter.notifyDataSetChanged();
 
-                Toast.makeText(getContext(), "Loaded 5 closest appointments.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Loaded 5 closest available/occupied appointments.", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "Error loading appointments.", Toast.LENGTH_SHORT).show();
             }
         });
     }
+
 }

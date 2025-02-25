@@ -85,21 +85,39 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public void reg(View view) {
+    public void reg(View view){
+        String fullName= ((EditText)findViewById(R.id.full_name)).getText().toString();
         String email = ((EditText)findViewById(R.id.email)).getText().toString();
         String password = ((EditText)findViewById(R.id.password1)).getText().toString();
+        String confirmPassword = ((EditText)findViewById(R.id.password2)).getText().toString();
+        String phone = ((EditText)findViewById(R.id.phone)).getText().toString();
         Log.d("result",email+" "+password);
+
+        if (fullName.isEmpty()  email.isEmpty()  password.isEmpty()  confirmPassword.isEmpty()  phone.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (password.length() < 6) {
+            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (phone.length() != 10) {
+            Toast.makeText(this, "Phone number must be 10 digits", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this,"reg ok",Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this,"Reg ok",Toast.LENGTH_LONG).show();
                             addDATA();
                             view.post(() -> Navigation.findNavController(view).navigate(R.id.action_regFregment_to_loginFregment));
 
                         } else {
-                            Toast.makeText(MainActivity.this,"reg fail",Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this,"Reg fail - try again",Toast.LENGTH_LONG).show();
 
                         }
                     }
